@@ -1,0 +1,12 @@
+.custom-text-input {
+    width: 350px;
+    height: 20px;
+    background-color: #eaeaea;
+    color: #000;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    padding: 10px;
+    display: block;
+    margin: 10px auto 10px auto;
+}

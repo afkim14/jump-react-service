@@ -1,26 +1,54 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
+import logoImg from './assets/images/logo-01.png';
+import { Constants } from './Constants';
+import Login from './components/Login';
+import SignUp from './components/SignUp';
+import CustomButton from './components/CustomButton';
 
-const App: React.FC = () => {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+type AppProps = {}
+type AppState = {
+  userAuthState: string
 }
 
-export default App;
+export default class App extends Component<AppProps, AppState> {
+  public readonly state: Readonly<AppState> = {
+    userAuthState: Constants.SIGN_UP
+  }
+
+  changeState = (state: string) => {
+    this.setState({ userAuthState: state });
+  }
+
+  signInWithGoogle = () => {
+
+  }
+
+  render() {
+    return (
+      <div className="home-container">
+        <img className="home-logo" src={logoImg}/>
+        <p className="home-logo-text">JUMP</p>
+        <p className="home-blurb">Send files of any size without saving it anywhere.</p>
+        {
+          this.state.userAuthState === Constants.LOGIN ? (
+            <Login toSignUp={() => {this.changeState(Constants.SIGN_UP)}} />
+          ) : (
+            <SignUp toLogin={() => {this.changeState(Constants.LOGIN)}} />
+          )
+        }
+        <div className="or-break-line">
+            <div className="break-line" />
+            <p className='or-msg'>or</p>
+            <div className="break-line" />
+        </div>
+        <div style={{clear: 'both'}}/>
+        <CustomButton
+          onClick={this.signInWithGoogle}
+          text={'Sign in with Google'}
+          style={{backgroundColor: '#4688f1'}}
+          />
+      </div>
+    );
+  }
+}

@@ -1,0 +1,20 @@
+.custom-button {
+    height: 40px;
+    width: 200px;
+    color: #ffffff;
+    background-color: #5bbc82;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    margin: 10px auto 10px auto;
+
+    transition: border-radius 0.5s linear;
+    -webkit-transition: border-radius 0.5s linear;
+    -moz-transition: border-radius 0.5s linear;
+     -o-transition: border-radius 0.5s linear;
+}
+
+.custom-button:hover {
+    border-radius: 75px;
+}
