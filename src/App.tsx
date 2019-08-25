@@ -16,12 +16,12 @@ export default class App extends Component<AppProps, AppState> {
     userAuthState: Constants.SIGN_UP
   }
 
-  changeState = (state: string) => {
+  changeAuthState = (state: string) => {
     this.setState({ userAuthState: state });
   }
 
   signInWithGoogle = () => {
-
+    
   }
 
   render() {
@@ -32,9 +32,9 @@ export default class App extends Component<AppProps, AppState> {
         <p className="home-blurb">Send files of any size without saving it anywhere.</p>
         {
           this.state.userAuthState === Constants.LOGIN ? (
-            <Login toSignUp={() => {this.changeState(Constants.SIGN_UP)}} />
+            <Login toSignUp={() => {this.changeAuthState(Constants.SIGN_UP)}} />
           ) : (
-            <SignUp toLogin={() => {this.changeState(Constants.LOGIN)}} />
+            <SignUp toLogin={() => {this.changeAuthState(Constants.LOGIN)}} />
           )
         }
         <div className="or-break-line">

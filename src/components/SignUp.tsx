@@ -15,6 +15,13 @@ type SignUpState = {
 }
 
 export default class SignUp extends Component<SignUpProps, SignUpState> {
+    state: SignUpState = {
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: ''
+    }
+
     handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // TODO: validate length, non-numeric values
         this.setState({ firstname: e.target.value });
@@ -40,6 +47,8 @@ export default class SignUp extends Component<SignUpProps, SignUpState> {
         if (!this.state.firstname || !this.state.lastname || !this.state.email || !this.state.password) {
             return;
         }
+
+        console.log(this.state);
     }
 
     render() {
