@@ -38,9 +38,9 @@ export default class App extends Component<AppProps, AppState> {
           )
         }
         <div className="or-break-line">
-            <div className="break-line" />
-            <p className='or-msg'>or</p>
-            <div className="break-line" />
+          <div className="break-line" />
+          <p className='or-msg'>or</p>
+          <div className="break-line" />
         </div>
         <div style={{clear: 'both'}}/>
         <CustomButton

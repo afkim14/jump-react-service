@@ -11,7 +11,7 @@ const routing = (
         <Route path="/" component={App} />
       </div>
     </Router>
-  )
+  );
 
 ReactDOM.render(routing, document.getElementById('root'));
 
