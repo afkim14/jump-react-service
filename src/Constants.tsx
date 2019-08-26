@@ -1,4 +1,4 @@
-export const Constants: any = {
-    LOGIN : 'LOGIN',
-    SIGN_UP : 'SIGN_UP'
-}
+export default {
+    LOGIN: 'LOGIN',
+    SIGN_UP: 'SIGN_UP',
+};

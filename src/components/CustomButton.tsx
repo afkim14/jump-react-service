@@ -2,13 +2,19 @@ import React from 'react';
 import './CustomButton.css';
 
 type CustomButtonProps = {
-    text: string,
-    onClick: Function,
-    style?: object
-}
+    text: string;
+    onClick: Function;
+    style?: object;
+};
 
-const CustomButton: React.FC<CustomButtonProps> = ({text, style, onClick}) => (
-    <button className="custom-button" onClick={() => {onClick()}} style={style}>
+const CustomButton: React.FC<CustomButtonProps> = ({ text, style, onClick }: CustomButtonProps) => (
+    <button
+        className="custom-button"
+        onClick={(): void => {
+            onClick();
+        }}
+        style={style}
+    >
         {text}
     </button>
 );

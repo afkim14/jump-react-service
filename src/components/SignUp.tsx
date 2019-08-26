@@ -4,45 +4,45 @@ import CustomButton from './CustomButton';
 import CustomTextInput from './CustomTextInput';
 
 type SignUpProps = {
-    toLogin: Function,
-}
+    toLogin: Function;
+};
 
 type SignUpState = {
-    firstname: string,
-    lastname: string,
-    email: string,
-    password: string
-}
+    firstname: string;
+    lastname: string;
+    email: string;
+    password: string;
+};
 
 export default class SignUp extends Component<SignUpProps, SignUpState> {
     state: SignUpState = {
         firstname: '',
         lastname: '',
         email: '',
-        password: ''
-    }
+        password: '',
+    };
 
-    handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         // TODO: validate length, non-numeric values
         this.setState({ firstname: e.target.value });
-    }
+    };
 
-    handleLastnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleLastnameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         // TODO: validate length, non-numeric values
         this.setState({ lastname: e.target.value });
-    }
+    };
 
-    handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         // TODO: validate email format
         this.setState({ email: e.target.value });
-    }
+    };
 
-    handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         // TODO: valid password length, strength (?)
         this.setState({ password: e.target.value });
-    }
+    };
 
-    submit = () => {
+    submit = (): void => {
         // handle registration
         /*
         if (!this.state.firstname || !this.state.lastname || !this.state.email || !this.state.password) {
@@ -51,37 +51,29 @@ export default class SignUp extends Component<SignUpProps, SignUpState> {
         */
 
         window.location.href = window.location + 'home';
-    }
+    };
 
-    render() {
+    render(): React.ReactNode {
         return (
             <div>
-                <CustomTextInput 
-                    onChange={this.handleFirstnameChange} 
-                    placeholder={'Firstname'} 
-                    />
-                <CustomTextInput 
-                    onChange={this.handleLastnameChange} 
-                    placeholder={'Lastname'} 
-                    />
-                <CustomTextInput 
-                    onChange={this.handleEmailChange} 
-                    placeholder={'Email'} 
-                    />
-                <CustomTextInput 
-                    onChange={this.handlePasswordChange} 
-                    placeholder={'Password'} 
-                    type={'password'}
-                    />
-                <CustomButton
-                    onClick={this.submit}
-                    text={'Create Account'}
-                    />
+                <CustomTextInput onChange={this.handleFirstnameChange} placeholder={'Firstname'} />
+                <CustomTextInput onChange={this.handleLastnameChange} placeholder={'Lastname'} />
+                <CustomTextInput onChange={this.handleEmailChange} placeholder={'Email'} />
+                <CustomTextInput onChange={this.handlePasswordChange} placeholder={'Password'} type={'password'} />
+                <CustomButton onClick={this.submit} text={'Create Account'} />
                 <span className="go-to-login-msg">
                     Already an user? Login&nbsp;
-                    <a className="link" onClick={() => {this.props.toLogin()}}>{'here.'}</a>
+                    {/* TODO: update to router link once home page is implemented */}
+                    <a
+                        className="link"
+                        onClick={(): void => {
+                            this.props.toLogin();
+                        }}
+                    >
+                        {'here.'}
+                    </a>
                 </span>
             </div>
-        )
+        );
     }
 }

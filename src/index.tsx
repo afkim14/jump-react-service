@@ -8,12 +8,12 @@ import * as serviceWorker from './serviceWorker';
 
 const routing = (
     <Router>
-      <div>
-        <Route exact path="/" component={App} />
-        <Route path="/home" component={MainHome} />
-      </div>
+        <div>
+            <Route exact path="/" component={App} />
+            <Route path="/home" component={MainHome} />
+        </div>
     </Router>
-  )
+);
 
 ReactDOM.render(routing, document.getElementById('root'));
 

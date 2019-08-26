@@ -12,7 +12,7 @@
     transition: border-radius 0.5s linear;
     -webkit-transition: border-radius 0.5s linear;
     -moz-transition: border-radius 0.5s linear;
-     -o-transition: border-radius 0.5s linear;
+    -o-transition: border-radius 0.5s linear;
 }
 
 .custom-button:hover {
