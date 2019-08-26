@@ -44,11 +44,13 @@ export default class SignUp extends Component<SignUpProps, SignUpState> {
 
     submit = () => {
         // handle registration
+        /*
         if (!this.state.firstname || !this.state.lastname || !this.state.email || !this.state.password) {
             return;
         }
+        */
 
-        console.log(this.state);
+        window.location.href = window.location + 'home';
     }
 
     render() {

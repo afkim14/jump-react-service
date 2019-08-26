@@ -10,3 +10,7 @@
     display: block;
     margin: 10px auto 10px auto;
 }
+
+.custom-text-input:focus {
+    box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
+}

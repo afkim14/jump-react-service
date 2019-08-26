@@ -3,12 +3,14 @@ import ReactDOM from 'react-dom';
 import { Route, BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
 import App from './App';
+import MainHome from './components/MainHome';
 import * as serviceWorker from './serviceWorker';
 
 const routing = (
     <Router>
       <div>
-        <Route path="/" component={App} />
+        <Route exact path="/" component={App} />
+        <Route path="/home" component={MainHome} />
       </div>
     </Router>
   )

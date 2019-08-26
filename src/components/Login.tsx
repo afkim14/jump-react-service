@@ -26,7 +26,7 @@ export default class Login extends Component<LoginProps, LoginState> {
             <div>
                 <CustomTextInput 
                     onChange={this.handleEmailChange} 
-                    placeholder={'Email'} 
+                    placeholder={'Email'}
                     />
                 <CustomTextInput 
                     onChange={this.handlePasswordChange} 

@@ -15,6 +15,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({onChange, placeholder,
         placeholder={placeholder} 
         style={style}
         type={type}
+        autoComplete="true"
     />
 );
 
