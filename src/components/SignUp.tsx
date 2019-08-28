@@ -44,13 +44,9 @@ export default class SignUp extends Component<SignUpProps, SignUpState> {
 
     submit = (): void => {
         // handle registration
-        /*
         if (!this.state.firstname || !this.state.lastname || !this.state.email || !this.state.password) {
             return;
         }
-        */
-
-        window.location.href = window.location + 'home';
     };
 
     render(): React.ReactNode {

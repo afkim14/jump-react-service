@@ -8,6 +8,7 @@
     border: none;
     cursor: pointer;
     margin: 10px auto 10px auto;
+    display: block;
 
     transition: border-radius 0.5s linear;
     -webkit-transition: border-radius 0.5s linear;
