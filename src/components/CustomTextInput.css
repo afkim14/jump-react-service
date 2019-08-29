@@ -9,6 +9,11 @@
     padding: 10px;
     display: block;
     margin: 10px auto 10px auto;
+
+    -webkit-transition: box-shadow 0.3s ease;
+    -moz-transition: box-shadow 0.3s ease;
+    -o-transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .custom-text-input:focus {

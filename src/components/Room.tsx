@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './Room.css';
 import Constants from '../Constants';
 
-type UserConnected = {
+type UsersConnected = {
     users: Array<string>;
 };
 
@@ -29,25 +29,31 @@ export default class Room extends Component<RoomProps, RoomState> {
     };
 
     componentDidMount(): void {
-        this.props.socket.on('USER_CONNECTED', (data: UserConnected) => {
+        /**
+         * This is called whenever a user joins or leaves the room.
+         */
+        this.props.socket.on(Constants.USERS_CONNECTED, (data: UsersConnected) => {
             this.setState({ usersConnected: data.users, validating: false });
             console.log(`Users connected: ${data.users}`);
         });
 
-        this.props.socket.on('ROOM_FULLY_CONNECTED', (data: object) => {
+        /**
+         * Called when room is full and ready for P2P connection.
+         * TODO: actually establish P2P connection given data from backend.
+         */
+        this.props.socket.on(Constants.ROOM_FULLY_CONNECTED, (data: object) => {
             console.log('Room fully connected');
         });
 
-        this.props.socket.on('CONNECT_TO_ROOM_FAIL', (data: ConnectRoomFailData) => {
+        /**
+         * Failed to connect room either because room doesn't exist, or room is full.
+         */
+        this.props.socket.on(Constants.CONNECT_TO_ROOM_FAIL, (data: ConnectRoomFailData) => {
             this.setState({ error: data.error, validating: false });
         });
 
-        this.props.socket.emit('CONNECT_TO_ROOM', { roomid: this.props.roomid });
-    }
-
-    componentWillUnmount(): void {
-        console.log('UNMOUNT');
-        this.props.socket.emit('DISCONNECT_FROM_ROOM', { roomid: this.props.roomid });
+        // Attempt to connect to room when this component loads.
+        this.props.socket.emit(Constants.CONNECT_TO_ROOM, { roomid: this.props.roomid });
     }
 
     render(): React.ReactNode {

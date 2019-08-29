@@ -10,9 +10,9 @@ import Constants from '../Constants';
 
 type MainHomeState = {
     sendTo: string;
-    socket: SocketIOClient.Socket;
     connectToRoom: boolean;
     roomid: string;
+    socket: SocketIOClient.Socket;
 };
 
 type ConnectRoomData = {
@@ -22,12 +22,13 @@ type ConnectRoomData = {
 export default class MainHome extends Component<RouteComponentProps, MainHomeState> {
     state: MainHomeState = {
         sendTo: '',
-        socket: openSocket(`${Constants.SERVER_HOST}:${Constants.SERVER_PORT}`),
         connectToRoom: false,
         roomid: '',
+        socket: openSocket(`${Constants.SERVER_HOST}:${Constants.SERVER_PORT}`),
     };
 
     componentDidMount(): void {
+        // If path contains /home/roomid, then attempt to connect to roomid.
         const path = window.location.pathname;
         const tokens = path.split('/');
         if (tokens.length > 2) {
@@ -35,17 +36,23 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
             this.setState({ connectToRoom: true, roomid: roomid });
         }
 
-        this.state.socket.on('CREATE_ROOM_SUCCESS', (data: ConnectRoomData) => {
+        // TODO: After creating room, user url should also update to contain the roomid extension
+        this.state.socket.on(Constants.CREATE_ROOM_SUCCESS, (data: ConnectRoomData) => {
             this.setState({ connectToRoom: true, roomid: data.roomid });
         });
     }
 
-    handleSendTo = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        this.setState({ sendTo: e.target.value });
-    };
+    componentWillUnmount(): void {
+        // IMPORTANT!: Have to close socket to trigger disconnect message on backend.
+        this.state.socket.close();
+    }
 
+    /**
+     * Creates room with relevant information.
+     */
     createRoom = (): void => {
-        this.state.socket.emit('CREATE_ROOM', { size: 2 });
+        // TODO: Placeholder value just to test connection.
+        this.state.socket.emit(Constants.CREATE_ROOM, { size: 2 });
     };
 
     render(): React.ReactNode {
@@ -56,11 +63,6 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
                     <Room socket={this.state.socket} roomid={this.state.roomid} />
                 ) : (
                     <div>
-                        <CustomTextInput
-                            onChange={this.handleSendTo}
-                            placeholder={'Send to ...'}
-                            style={{ margin: 0 }}
-                        />
                         <CustomButton
                             onClick={this.createRoom}
                             text={'Create Room / Send Invite'}
