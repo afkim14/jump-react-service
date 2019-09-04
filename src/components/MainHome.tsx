@@ -7,6 +7,7 @@ import Room from './Room';
 import openSocket from 'socket.io-client';
 import Constants from '../Constants';
 import * as Types from '../Types';
+import CustomTextInput from './CustomTextInput';
 
 type MainHomeState = {
     sendTo: string;
@@ -52,20 +53,15 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         this.state.socket.on(Constants.CREATE_ROOM_SUCCESS, (data: Types.ConnectRoom) => {
             this.setState({ connectToRoom: true, roomid: data.roomid });
         });
+
+        // Design Choice: user creates room automatically if link does not contain room to connect to
+        this.state.socket.emit(Constants.CREATE_ROOM, { size: 2 });
     }
 
     componentWillUnmount(): void {
         // IMPORTANT!: Have to close socket to trigger disconnect message on backend.
         this.state.socket.close();
     }
-
-    /**
-     * Creates room with relevant information.
-     */
-    createRoom = (): void => {
-        // TODO: Placeholder value just to test connection.
-        this.state.socket.emit(Constants.CREATE_ROOM, { size: 2 });
-    };
 
     /**
      * Called when a user is clicked
@@ -82,17 +78,7 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
                     users={this.state.users}
                     selectUser={this.selectUser}
                 />
-                {this.state.connectToRoom ? (
-                    <Room socket={this.state.socket} roomid={this.state.roomid} />
-                ) : (
-                    <div>
-                        <CustomButton
-                            onClick={this.createRoom}
-                            text={'Create Room / Send Invite'}
-                            style={{ margin: 0 }}
-                        />
-                    </div>
-                )}
+                {this.state.connectToRoom && <Room socket={this.state.socket} roomid={this.state.roomid} />}
             </div>
         );
     }

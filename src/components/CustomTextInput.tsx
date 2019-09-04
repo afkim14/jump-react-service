@@ -19,6 +19,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         onChange={(e): void => {
             onChange(e);
         }}
+        spellCheck={false}
         placeholder={placeholder}
         style={style}
         type={type}

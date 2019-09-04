@@ -1,4 +1,33 @@
 .room-container {
+    display: inline-block;
     padding-left: 20px;
     padding-top: 20px;
+}
+
+.room-welcome-msg {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.room-link {
+    padding: 10px;
+    background-color: #d8d8d8;
+    cursor: pointer;
+    margin-bottom: 0px;
+}
+
+.room-link-copy-msg {
+    color: #3e3e3e;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.connected-users-header {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.connected-user-container {
+    display: inline-block;
+    margin-right: 20px;
 }

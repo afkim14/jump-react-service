@@ -20,7 +20,7 @@ type RoomState = {
 export default class Room extends Component<RoomProps, RoomState> {
     state: RoomState = {
         usersConnected: {},
-        validating: false,
+        validating: true,
         error: '',
         linkCopied: false,
     };
@@ -59,21 +59,32 @@ export default class Room extends Component<RoomProps, RoomState> {
         }
 
         if (this.state.error !== '') {
-            return <p>{this.state.error}</p>;
+            return (
+                <div className="room-container">
+                    <p>{this.state.error}</p>
+                </div>
+            );
         }
 
         const shareLink = `http://localhost:3000/home/${this.props.roomid}`;
         return (
             <div className="room-container">
-                <p className="room-link">{shareLink}</p>
+                <p className="room-welcome-msg">Start sharing.</p>
                 <CopyToClipboard text={shareLink} onCopy={(): void => this.setState({ linkCopied: true })}>
-                    <CustomButton
-                        disabled={this.state.linkCopied ? true : false}
-                        text={this.state.linkCopied ? 'Copied' : 'Copy'}
-                    />
+                    <p className="room-link">{shareLink}</p>
                 </CopyToClipboard>
+                <p className="room-link-copy-msg">{this.state.linkCopied ? 'Copied.' : 'Click to copy.'}</p>
+                <p className="connected-users-header">Connected Users</p>
                 {Object.keys(this.state.usersConnected).map((userid, i) => {
-                    return <p key={i}>{this.state.usersConnected[userid].displayName}</p>;
+                    return (
+                        <div key={i} className="connected-user-container">
+                            <div
+                                className="user-display-icon"
+                                style={{ backgroundColor: this.state.usersConnected[userid].color }}
+                            ></div>
+                            <p className="user-display-text">{this.state.usersConnected[userid].displayName}</p>
+                        </div>
+                    );
                 })}
             </div>
         );

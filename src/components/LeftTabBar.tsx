@@ -31,7 +31,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                     JUMP
                 </Link>
                 <UserContainer displayName={this.props.displayName} onClick={this.props.selectUser} />
-                <p className="left-tab-bar-header">Connected Users</p>
+                <p className="left-tab-bar-header">All Users</p>
                 <CustomTextInput
                     onChange={this.handleSearchUser}
                     placeholder={'Search ...'}
