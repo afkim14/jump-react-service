@@ -3,20 +3,18 @@ import { RouteComponentProps } from 'react-router-dom';
 import './MainHome.css';
 import LeftTabBar from './LeftTabBar';
 import CustomButton from './CustomButton';
-import CustomTextInput from './CustomTextInput';
 import Room from './Room';
 import openSocket from 'socket.io-client';
 import Constants from '../Constants';
+import * as Types from '../Types';
 
 type MainHomeState = {
     sendTo: string;
     connectToRoom: boolean;
     roomid: string;
     socket: SocketIOClient.Socket;
-};
-
-type ConnectRoomData = {
-    roomid: string;
+    displayName: Types.UserDisplay;
+    users: Types.UserDisplayMap;
 };
 
 export default class MainHome extends Component<RouteComponentProps, MainHomeState> {
@@ -25,9 +23,15 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         connectToRoom: false,
         roomid: '',
         socket: openSocket(`${Constants.SERVER_HOST}:${Constants.SERVER_PORT}`),
+        displayName: { userid: '', displayName: '', color: '' },
+        users: {},
     };
 
     componentDidMount(): void {
+        // Get random username and a list of connected users
+        this.state.socket.emit(Constants.GET_DISPLAY_NAME);
+        this.state.socket.emit(Constants.GET_USERS);
+
         // If path contains /home/roomid, then attempt to connect to roomid.
         const path = window.location.pathname;
         const tokens = path.split('/');
@@ -36,8 +40,16 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
             this.setState({ connectToRoom: true, roomid: roomid });
         }
 
+        this.state.socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
+            this.setState({ displayName });
+        });
+
+        this.state.socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
+            this.setState({ users });
+        });
+
         // TODO: After creating room, user url should also update to contain the roomid extension
-        this.state.socket.on(Constants.CREATE_ROOM_SUCCESS, (data: ConnectRoomData) => {
+        this.state.socket.on(Constants.CREATE_ROOM_SUCCESS, (data: Types.ConnectRoom) => {
             this.setState({ connectToRoom: true, roomid: data.roomid });
         });
     }
@@ -55,10 +67,21 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         this.state.socket.emit(Constants.CREATE_ROOM, { size: 2 });
     };
 
+    /**
+     * Called when a user is clicked
+     */
+    selectUser = (displayName: Types.UserDisplay) => {
+        return;
+    };
+
     render(): React.ReactNode {
         return (
             <div>
-                <LeftTabBar />
+                <LeftTabBar
+                    displayName={this.state.displayName}
+                    users={this.state.users}
+                    selectUser={this.selectUser}
+                />
                 {this.state.connectToRoom ? (
                     <Room socket={this.state.socket} roomid={this.state.roomid} />
                 ) : (

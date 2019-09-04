@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import './Room.css';
+import CustomButton from './CustomButton';
 import Constants from '../Constants';
-
-type UsersConnected = {
-    users: Array<string>;
-};
+import CopyToClipboard from 'react-copy-to-clipboard';
+import * as Types from '../Types';
 
 type RoomProps = {
     socket: SocketIOClient.Socket;
@@ -12,29 +11,27 @@ type RoomProps = {
 };
 
 type RoomState = {
-    usersConnected: Array<string>;
+    usersConnected: Types.UserDisplayMap;
     validating: boolean;
     error: string;
-};
-
-type ConnectRoomFailData = {
-    error: string;
+    linkCopied: boolean;
 };
 
 export default class Room extends Component<RoomProps, RoomState> {
     state: RoomState = {
-        usersConnected: [],
+        usersConnected: {},
         validating: false,
         error: '',
+        linkCopied: false,
     };
 
     componentDidMount(): void {
         /**
          * This is called whenever a user joins or leaves the room.
          */
-        this.props.socket.on(Constants.USERS_CONNECTED, (data: UsersConnected) => {
-            this.setState({ usersConnected: data.users, validating: false });
-            console.log(`Users connected: ${data.users}`);
+        this.props.socket.on(Constants.USERS_CONNECTED, (users: Types.UserDisplayMap) => {
+            this.setState({ usersConnected: users, validating: false });
+            console.log(`Users connected: ${users}`);
         });
 
         /**
@@ -48,8 +45,8 @@ export default class Room extends Component<RoomProps, RoomState> {
         /**
          * Failed to connect room either because room doesn't exist, or room is full.
          */
-        this.props.socket.on(Constants.CONNECT_TO_ROOM_FAIL, (data: ConnectRoomFailData) => {
-            this.setState({ error: data.error, validating: false });
+        this.props.socket.on(Constants.CONNECT_TO_ROOM_FAIL, (error: string) => {
+            this.setState({ error, validating: false });
         });
 
         // Attempt to connect to room when this component loads.
@@ -65,11 +62,18 @@ export default class Room extends Component<RoomProps, RoomState> {
             return <p>{this.state.error}</p>;
         }
 
+        const shareLink = `http://localhost:3000/home/${this.props.roomid}`;
         return (
-            <div>
-                <div>{`Room ID: ${this.props.roomid}`}</div>
-                {this.state.usersConnected.map((userid, i) => {
-                    return <p key={i}>{userid}</p>;
+            <div className="room-container">
+                <p className="room-link">{shareLink}</p>
+                <CopyToClipboard text={shareLink} onCopy={(): void => this.setState({ linkCopied: true })}>
+                    <CustomButton
+                        disabled={this.state.linkCopied ? true : false}
+                        text={this.state.linkCopied ? 'Copied' : 'Copy'}
+                    />
+                </CopyToClipboard>
+                {Object.keys(this.state.usersConnected).map((userid, i) => {
+                    return <p key={i}>{this.state.usersConnected[userid].displayName}</p>;
                 })}
             </div>
         );

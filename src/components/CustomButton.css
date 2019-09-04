@@ -16,6 +16,19 @@
     -o-transition: border-radius 0.5s linear;
 }
 
+.disabled-button {
+    height: 40px;
+    width: 200px;
+    color: #ffffff;
+    background-color: #3e3e3e;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    border-radius: 75px;
+    margin: 10px auto 10px auto;
+    display: block;
+}
+
 .custom-button:hover {
     border-radius: 75px;
 }
