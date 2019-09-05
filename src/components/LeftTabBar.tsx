@@ -9,6 +9,8 @@ type LeftTabBarProps = {
     displayName: Types.UserDisplay;
     users: Types.UserDisplayMap;
     selectUser: (displayName: Types.UserDisplay) => void;
+    updateSearchResults: (search: string) => void;
+    searchResults: Array<Types.UserDisplay>;
 };
 
 type LeftTabBarState = {
@@ -22,6 +24,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
 
     handleSearchUser = (e: React.ChangeEvent<HTMLInputElement>): void => {
         this.setState({ searchUser: e.target.value });
+        this.props.updateSearchResults(e.target.value);
     };
 
     render(): React.ReactNode {
@@ -37,13 +40,13 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                     placeholder={'Search ...'}
                     style={{ backgroundColor: '#d8d8d8', width: '80%' }}
                 />
-                {Object.keys(this.props.users).map((user, i) => {
+                {this.props.searchResults.map((user, i) => {
                     return (
                         <UserContainer
                             key={i}
-                            displayName={this.props.users[user]}
+                            displayName={user}
                             onClick={(): void => {
-                                this.props.selectUser(this.props.users[user]);
+                                this.props.selectUser(user);
                             }}
                         />
                     );

@@ -8,6 +8,7 @@ import openSocket from 'socket.io-client';
 import Constants from '../Constants';
 import * as Types from '../Types';
 import CustomTextInput from './CustomTextInput';
+import TrieSearch from 'trie-search';
 
 type MainHomeState = {
     sendTo: string;
@@ -16,7 +17,10 @@ type MainHomeState = {
     socket: SocketIOClient.Socket;
     displayName: Types.UserDisplay;
     users: Types.UserDisplayMap;
+    searchResults: Array<Types.UserDisplay>;
 };
+
+let usersTrie: Record<string, any>;
 
 export default class MainHome extends Component<RouteComponentProps, MainHomeState> {
     state: MainHomeState = {
@@ -26,9 +30,12 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         socket: openSocket(`${Constants.SERVER_HOST}:${Constants.SERVER_PORT}`),
         displayName: { userid: '', displayName: '', color: '' },
         users: {},
+        searchResults: [],
     };
 
     componentDidMount(): void {
+        this.updateSearchResults = this.updateSearchResults.bind(this);
+
         // Get random username and a list of connected users
         this.state.socket.emit(Constants.GET_DISPLAY_NAME);
         this.state.socket.emit(Constants.GET_USERS);
@@ -46,7 +53,10 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         });
 
         this.state.socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
-            this.setState({ users });
+            // FIXME: new Trie created everytime user logs in or disconnects from system
+            usersTrie = new TrieSearch('displayName');
+            usersTrie.addAll(Object.values(users));
+            this.setState({ users, searchResults: Object.values(users) });
         });
 
         // TODO: After creating room, user url should also update to contain the roomid extension
@@ -64,6 +74,18 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
     }
 
     /**
+     * Returns search result from trie
+     */
+    updateSearchResults(search: string): void {
+        if (search === '') {
+            this.setState({ searchResults: Object.values(this.state.users) });
+            return;
+        }
+
+        this.setState({ searchResults: usersTrie.get(search) });
+    }
+
+    /**
      * Called when a user is clicked
      */
     selectUser = (displayName: Types.UserDisplay) => {
@@ -76,6 +98,8 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
                 <LeftTabBar
                     displayName={this.state.displayName}
                     users={this.state.users}
+                    updateSearchResults={this.updateSearchResults}
+                    searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
                 />
                 {this.state.connectToRoom && <Room socket={this.state.socket} roomid={this.state.roomid} />}
