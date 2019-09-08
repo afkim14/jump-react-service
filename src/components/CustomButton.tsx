@@ -3,16 +3,20 @@ import './CustomButton.css';
 
 type CustomButtonProps = {
     text: string;
-    onClick: Function;
+    onClick?: Function;
     style?: object;
+    disabled?: boolean;
 };
 
-const CustomButton: React.FC<CustomButtonProps> = ({ text, style, onClick }) => (
+const CustomButton: React.SFC<CustomButtonProps> = ({ text, style, onClick, disabled }: CustomButtonProps) => (
     <button
-        className="custom-button"
-        onClick={() => {
-            onClick();
+        className={disabled ? 'disabled-button' : 'custom-button'}
+        onClick={(): void => {
+            if (onClick) {
+                onClick();
+            }
         }}
+        disabled={disabled}
         style={style}
     >
         {text}

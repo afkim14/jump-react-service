@@ -1,0 +1,33 @@
+.left-tab-bar-container {
+    width: 300px;
+    background-color: #eaeaea;
+    height: 100vh;
+    float: left;
+}
+
+.left-tab-bar-logo-text {
+    font-size: 25px;
+    font-weight: bold;
+    color: #000;
+    display: inline-block;
+    margin-top: 20px;
+    margin-left: 20px;
+    text-decoration: none;
+
+    -webkit-transition: letter-spacing 0.3s ease;
+    -moz-transition: letter-spacing 0.3s ease;
+    -o-transition: letter-spacing 0.3s ease;
+    transition: letter-spacing 0.3s ease;
+}
+
+.left-tab-bar-logo-text:hover {
+    letter-spacing: 5px;
+}
+
+.left-tab-bar-header {
+    font-size: 18px;
+    color: #3e3e3e;
+    font-weight: bold;
+    padding-left: 20px;
+    clear: both;
+}

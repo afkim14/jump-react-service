@@ -1,12 +1,21 @@
 .custom-text-input {
-  width: 350px;
-  height: 20px;
-  background-color: #eaeaea;
-  color: #000;
-  font-size: 15px;
-  outline: none;
-  border: none;
-  padding: 10px;
-  display: block;
-  margin: 10px auto 10px auto;
+    width: 350px;
+    height: 20px;
+    background-color: #eaeaea;
+    color: #000;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    padding: 10px;
+    display: block;
+    margin: 10px auto 10px auto;
+
+    -webkit-transition: box-shadow 0.3s ease;
+    -moz-transition: box-shadow 0.3s ease;
+    -o-transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
+}
+
+.custom-text-input:focus {
+    box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
 }

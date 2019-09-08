@@ -1,19 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Route, BrowserRouter as Router } from 'react-router-dom';
+import { useRoutes } from 'hookrouter';
+import * as serviceWorker from './constants/serviceWorker';
 import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
 
-const routing = (
-    <Router>
-      <div>
-        <Route path="/" component={App} />
-      </div>
-    </Router>
-  );
+import Login from './components/Login';
+import MainHome from './components/MainHome';
+import { NotFoundPage } from './components/NotFoundPage';
 
-ReactDOM.render(routing, document.getElementById('root'));
+// TODO: HELP, not sure how to fix these lint errors
+const routes = {
+    '/': () => <Login />,
+    '/home': () => <MainHome />,
+    '/home/:roomid': ({ roomid }: { [roomid: string]: string }) => <MainHome roomid={roomid} />,
+};
+
+// TODO: Couldn't find what type this is supposed to be
+function App(): any {
+    const routeResult = useRoutes(routes) || NotFoundPage;
+    return routeResult;
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

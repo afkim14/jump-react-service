@@ -8,15 +8,22 @@ type CustomTextInputProps = {
     type?: string;
 };
 
-const CustomTextInput: React.FC<CustomTextInputProps> = ({ onChange, placeholder, style, type }) => (
+const CustomTextInput: React.SFC<CustomTextInputProps> = ({
+    onChange,
+    placeholder,
+    style,
+    type,
+}: CustomTextInputProps) => (
     <input
         className="custom-text-input"
-        onChange={e => {
+        onChange={(e): void => {
             onChange(e);
         }}
+        spellCheck={false}
         placeholder={placeholder}
         style={style}
         type={type}
+        autoComplete="true"
     />
 );
 
