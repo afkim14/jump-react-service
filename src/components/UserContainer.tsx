@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './UserContainer.css';
 import * as Types from '../constants/Types';
 
@@ -7,20 +7,18 @@ type UserContainerProps = {
     onClick: (displayName: Types.UserDisplay) => void;
 };
 
-type UserContainerState = {};
+const UserContainer: React.SFC<UserContainerProps> = ({ displayName, onClick }: UserContainerProps) => {
+    return (
+        <div
+            className="user-container"
+            onMouseDown={(): void => {
+                onClick(displayName);
+            }}
+        >
+            <div className="user-display-icon" style={{ backgroundColor: displayName.color }}></div>
+            <p className="user-display-text">{displayName.displayName}</p>
+        </div>
+    );
+};
 
-export default class UserContainer extends Component<UserContainerProps, UserContainerState> {
-    render(): React.ReactNode {
-        return (
-            <div
-                className="user-container"
-                onMouseDown={(): void => {
-                    this.props.onClick(this.props.displayName);
-                }}
-            >
-                <div className="user-display-icon" style={{ backgroundColor: this.props.displayName.color }}></div>
-                <p className="user-display-text">{this.props.displayName.displayName}</p>
-            </div>
-        );
-    }
-}
+export default UserContainer;

@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import './MainHome.css';
-import LeftTabBar from './LeftTabBar';
-import Room from './Room';
+import TrieSearch from 'trie-search';
 import openSocket from 'socket.io-client';
+
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
-import TrieSearch from 'trie-search';
 import SocketContext from '../constants/socket-context';
+
+import LeftTabBar from './LeftTabBar';
+import Room from './Room';
+import './MainHome.css';
 
 type MainHomeProps = {
     roomid?: string;

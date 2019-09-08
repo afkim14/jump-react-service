@@ -41,3 +41,7 @@ textarea {
 .link:hover {
     border-bottom: 1.5px solid #4585bf;
 }
+
+.standard-container-padding {
+    padding: 20px;
+}

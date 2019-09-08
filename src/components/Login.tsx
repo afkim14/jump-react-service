@@ -1,8 +1,8 @@
 import React from 'react';
 import { A } from 'hookrouter';
-import './Login.css';
 import logoImg from '../assets/images/logo-01.png';
 import CustomButton from './CustomButton';
+import './Login.css';
 
 const Login: React.SFC = () => {
     return (

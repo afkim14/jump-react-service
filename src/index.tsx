@@ -1,11 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import { useRoutes } from 'hookrouter';
-import routes from './constants/routes';
 import * as serviceWorker from './constants/serviceWorker';
+import './index.css';
 
+import Login from './components/Login';
+import MainHome from './components/MainHome';
 import { NotFoundPage } from './components/NotFoundPage';
+
+// TODO: HELP, not sure how to fix these lint errors
+const routes = {
+    '/': () => <Login />,
+    '/home': () => <MainHome />,
+    '/home/:roomid': ({ roomid }: { [roomid: string]: string }) => <MainHome roomid={roomid} />,
+};
 
 // TODO: Couldn't find what type this is supposed to be
 function App(): any {
