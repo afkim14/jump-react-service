@@ -1,21 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Route, BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
-import App from './App';
-import MainHome from './components/MainHome';
-import * as serviceWorker from './serviceWorker';
+import { useRoutes } from 'hookrouter';
+import routes from './constants/routes';
+import * as serviceWorker from './constants/serviceWorker';
 
-const routing = (
-    <Router>
-        <div>
-            <Route exact path="/" component={App} />
-            <Route path="/home" component={MainHome} />
-        </div>
-    </Router>
-);
+import { NotFoundPage } from './components/NotFoundPage';
 
-ReactDOM.render(routing, document.getElementById('root'));
+// TODO: Couldn't find what type this is supposed to be
+function App(): any {
+    const routeResult = useRoutes(routes) || NotFoundPage;
+    return routeResult;
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

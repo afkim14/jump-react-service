@@ -1,43 +1,27 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { A } from 'hookrouter';
 import './Login.css';
-import CustomTextInput from './CustomTextInput';
+import logoImg from '../assets/images/logo-01.png';
+import CustomButton from './CustomButton';
 
-type LoginProps = {
-    toSignUp: Function;
-};
-
-type LoginState = {
-    email: string;
-    password: string;
-};
-
-export default class Login extends Component<LoginProps, LoginState> {
-    handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        this.setState({ email: e.target.value });
-    };
-
-    handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        this.setState({ password: e.target.value });
-    };
-
-    render(): React.ReactNode {
-        return (
-            <div>
-                <CustomTextInput onChange={this.handleEmailChange} placeholder={'Email'} />
-                <CustomTextInput onChange={this.handlePasswordChange} placeholder={'Password'} type={'password'} />
-                <span className="go-to-sign-up-msg">
-                    Not registered? Register&nbsp;
-                    {/* TODO: update to router link once home page is implemented */}
-                    <a
-                        className="link"
-                        onClick={(): void => {
-                            this.props.toSignUp();
-                        }}
-                    >
-                        {'here.'}
-                    </a>
-                </span>
+const Login: React.SFC = () => {
+    return (
+        <div>
+            <div className="home-container">
+                <img className="home-logo" src={logoImg} />
+                <p className="home-logo-text">JUMP</p>
+                <p className="home-blurb">Send files of any size without saving it anywhere.</p>
+                <A href="/home" className="left-tab-bar-logo-text">
+                    <CustomButton text={'Continue as guest'} style={{ backgroundColor: '#3e3e3e' }} />
+                </A>
             </div>
-        );
-    }
-}
+            <div className="mobile-container">
+                <img className="home-logo" src={logoImg} />
+                <p className="home-logo-text">JUMP</p>
+                <p className="home-blurb">Sorry, this service is not available on mobile.</p>
+            </div>
+        </div>
+    );
+};
+
+export default Login;

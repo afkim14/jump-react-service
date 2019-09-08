@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 import './MainHome.css';
 import LeftTabBar from './LeftTabBar';
-import CustomButton from './CustomButton';
 import Room from './Room';
 import openSocket from 'socket.io-client';
-import Constants from '../Constants';
-import * as Types from '../Types';
-import CustomTextInput from './CustomTextInput';
+import Constants from '../constants/Constants';
+import * as Types from '../constants/Types';
 import TrieSearch from 'trie-search';
+import SocketContext from '../constants/socket-context';
+
+type MainHomeProps = {
+    roomid?: string;
+};
 
 type MainHomeState = {
     sendTo: string;
@@ -22,11 +24,11 @@ type MainHomeState = {
 
 let usersTrie: Record<string, any>;
 
-export default class MainHome extends Component<RouteComponentProps, MainHomeState> {
+export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     state: MainHomeState = {
         sendTo: '',
         connectToRoom: false,
-        roomid: '',
+        roomid: this.props.roomid ? this.props.roomid : '',
         socket: openSocket(`${Constants.SERVER_HOST}:${Constants.SERVER_PORT}`),
         displayName: { userid: '', displayName: '', color: '' },
         users: {},
@@ -40,12 +42,9 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
         this.state.socket.emit(Constants.GET_DISPLAY_NAME);
         this.state.socket.emit(Constants.GET_USERS);
 
-        // If path contains /home/roomid, then attempt to connect to roomid.
-        const path = window.location.pathname;
-        const tokens = path.split('/');
-        if (tokens.length > 2) {
-            const roomid = tokens[tokens.length - 1];
-            this.setState({ connectToRoom: true, roomid: roomid });
+        // If url path contains roomid, then attempt to connect to roomid.
+        if (this.state.roomid !== '') {
+            this.setState({ connectToRoom: true });
         }
 
         this.state.socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
@@ -89,12 +88,13 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
      * Called when a user is clicked
      */
     selectUser = (displayName: Types.UserDisplay) => {
+        // TODO: implement user click
         return;
     };
 
     render(): React.ReactNode {
         return (
-            <div>
+            <SocketContext.Provider value={this.state.socket}>
                 <LeftTabBar
                     displayName={this.state.displayName}
                     users={this.state.users}
@@ -102,8 +102,8 @@ export default class MainHome extends Component<RouteComponentProps, MainHomeSta
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
                 />
-                {this.state.connectToRoom && <Room socket={this.state.socket} roomid={this.state.roomid} />}
-            </div>
+                {this.state.connectToRoom && <Room roomid={this.state.roomid} />}
+            </SocketContext.Provider>
         );
     }
 }

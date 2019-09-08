@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import './Room.css';
-import CustomButton from './CustomButton';
-import Constants from '../Constants';
+import Constants from '../constants/Constants';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import * as Types from '../Types';
+import * as Types from '../constants/Types';
+import SocketContext from '../constants/socket-context';
 
 type RoomProps = {
-    socket: SocketIOClient.Socket;
     roomid: string;
+    socket: SocketIOClient.Socket;
 };
 
 type RoomState = {
@@ -17,7 +17,7 @@ type RoomState = {
     linkCopied: boolean;
 };
 
-export default class Room extends Component<RoomProps, RoomState> {
+class Room extends Component<RoomProps, RoomState> {
     state: RoomState = {
         usersConnected: {},
         validating: true,
@@ -68,7 +68,7 @@ export default class Room extends Component<RoomProps, RoomState> {
 
         const shareLink = `http://localhost:3000/home/${this.props.roomid}`;
         return (
-            <div className="room-container">
+            <div className="room-container standard-container-padding">
                 <p className="room-welcome-msg">Start sharing.</p>
                 <CopyToClipboard text={shareLink} onCopy={(): void => this.setState({ linkCopied: true })}>
                     <p className="room-link">{shareLink}</p>
@@ -90,3 +90,17 @@ export default class Room extends Component<RoomProps, RoomState> {
         );
     }
 }
+
+type RoomWithSocketProps = {
+    roomid: string;
+};
+
+const RoomWithSocket: React.SFC<RoomWithSocketProps> = props => {
+    return (
+        <SocketContext.Consumer>
+            {(socket: SocketIOClient.Socket): React.ReactNode => <Room {...props} socket={socket} />}
+        </SocketContext.Consumer>
+    );
+};
+
+export default RoomWithSocket;

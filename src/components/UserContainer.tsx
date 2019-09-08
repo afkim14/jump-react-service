@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './UserContainer.css';
-import * as Types from '../Types';
+import * as Types from '../constants/Types';
 
 type UserContainerProps = {
     displayName: Types.UserDisplay;

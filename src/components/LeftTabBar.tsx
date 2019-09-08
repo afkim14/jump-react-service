@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import { A } from 'hookrouter';
 import './LeftTabBar.css';
 import CustomTextInput from './CustomTextInput';
 import UserContainer from './UserContainer';
-import { Link } from 'react-router-dom';
-import * as Types from '../Types';
+import * as Types from '../constants//Types';
 
 type LeftTabBarProps = {
     displayName: Types.UserDisplay;
@@ -30,9 +30,9 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
     render(): React.ReactNode {
         return (
             <div className="left-tab-bar-container">
-                <Link className="left-tab-bar-logo-text" to="/">
+                <A href="/" className="left-tab-bar-logo-text">
                     JUMP
-                </Link>
+                </A>
                 <UserContainer displayName={this.props.displayName} onClick={this.props.selectUser} />
                 <p className="left-tab-bar-header">All Users</p>
                 <CustomTextInput
