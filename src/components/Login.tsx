@@ -8,7 +8,7 @@ const Login: React.SFC = () => {
     return (
         <div>
             <div className="home-container">
-                <img className="home-logo" src={logoImg} />
+                <img className="home-logo" src={logoImg} alt={'Jump Logo'} />
                 <p className="home-logo-text">JUMP</p>
                 <p className="home-blurb">Send files of any size without saving it anywhere.</p>
                 <A href="/home" className="left-tab-bar-logo-text">
@@ -16,7 +16,7 @@ const Login: React.SFC = () => {
                 </A>
             </div>
             <div className="mobile-container">
-                <img className="home-logo" src={logoImg} />
+                <img className="home-logo" src={logoImg} alt={'Jump Logo'} />
                 <p className="home-logo-text">JUMP</p>
                 <p className="home-blurb">Sorry, this service is not available on mobile.</p>
             </div>
