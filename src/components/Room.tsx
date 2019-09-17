@@ -5,6 +5,8 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import * as Types from '../constants/Types';
 import SocketContext from '../constants/socket-context';
 
+import MessageTransfer from './Messaging';
+
 type RoomProps = {
     roomid: string;
     socket: SocketIOClient.Socket;
@@ -86,6 +88,10 @@ class Room extends Component<RoomProps, RoomState> {
                         </div>
                     );
                 })}
+                <br />
+                <br />
+                <br />
+                <MessageTransfer />
             </div>
         );
     }
