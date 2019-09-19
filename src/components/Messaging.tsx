@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-type MessageTransferProps = {};
+type MessagingProps = {};
 
-type MessageTransferState = {
+type MessagingState = {
     connectButtonDisabled: boolean;
     disconnectButtonDisabled: boolean;
     messageInputDisabled: boolean;
@@ -10,8 +10,8 @@ type MessageTransferState = {
     messages: string[];
 };
 
-class MessageTransfer extends Component<MessageTransferProps, MessageTransferState> {
-    state: MessageTransferState = {
+class Messaging extends Component<MessagingProps, MessagingState> {
+    state: MessagingState = {
         connectButtonDisabled: false,
         disconnectButtonDisabled: true,
         messageInputDisabled: true,
@@ -19,27 +19,29 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
         messages: [],
     };
 
-    remoteConnection: any;
-    localConnection: any;
-    sendChannel: any;
-    receiveChannel: any;
+    remoteConnection: RTCPeerConnection;
+    localConnection: RTCPeerConnection;
+    sendChannel: RTCDataChannel | null;
+    receiveChannel: RTCDataChannel | null;
 
-    constructor(props: MessageTransferProps) {
+    constructor(props: MessagingProps) {
         super(props);
         this.handleMessageInputChange = this.handleMessageInputChange.bind(this);
         this.handleMessageInputSubmit = this.handleMessageInputSubmit.bind(this);
         this.handleReceiveMessage = this.handleReceiveMessage.bind(this);
+
+        this.localConnection = new RTCPeerConnection();
+        this.remoteConnection = new RTCPeerConnection();
+        this.sendChannel = null;
+        this.receiveChannel = null;
     }
 
     connectPeers = () => {
-        this.localConnection = new RTCPeerConnection();
-
-        this.sendChannel = this.localConnection.createDataChannel('sendChannel');
+        this.sendChannel = this.localConnection.createDataChannel('messageSendChannel');
 
         this.sendChannel.onopen = this.handleSendChannelStatusChange;
         this.sendChannel.onclose = this.handleSendChannelStatusChange;
 
-        this.remoteConnection = new RTCPeerConnection();
         this.remoteConnection.ondatachannel = this.receiveChannelCallback;
 
         // TODO: provide method of connection and agree over server, and not with single client
@@ -67,16 +69,16 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
     };
 
     disconnectPeers = () => {
-        this.sendChannel.close();
-        this.receiveChannel.close();
+        (this.sendChannel as RTCDataChannel).close();
+        (this.receiveChannel as RTCDataChannel).close();
 
         this.localConnection.close();
         this.remoteConnection.close();
 
         this.sendChannel = null;
         this.receiveChannel = null;
-        this.localConnection = null;
-        this.remoteConnection = null;
+        this.localConnection = new RTCPeerConnection();
+        this.remoteConnection = new RTCPeerConnection();
 
         this.setState({
             connectButtonDisabled: false,
@@ -86,7 +88,7 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
         });
     };
 
-    handleSendChannelStatusChange = (event: RTCDataChannelEvent) => {
+    handleSendChannelStatusChange = (event: Event) => {
         if (this.sendChannel) {
             let state = this.sendChannel.readyState;
 
@@ -114,7 +116,7 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
     };
 
     handleAddCandidateError = () => {
-        console.log('Something went wrong with adding the candidate');
+        console.log('Something went wrong with adding the candidate.');
     };
 
     handleCreateDescriptionError = (error: Error) => {
@@ -149,7 +151,7 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
     }
 
     sendMessage(msg: string) {
-        this.sendChannel.send(msg);
+        (this.sendChannel as RTCDataChannel).send(msg);
     }
 
     handleMessageInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -172,7 +174,7 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
             </p>
         ));
         return (
-            <div className="message-transfer">
+            <div className="message">
                 <div className="message-input">
                     <form onSubmit={this.handleMessageInputSubmit}>
                         <input
@@ -206,4 +208,4 @@ class MessageTransfer extends Component<MessageTransferProps, MessageTransferSta
     }
 }
 
-export default MessageTransfer;
+export default Messaging;
