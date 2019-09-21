@@ -14,5 +14,19 @@ export type Room = {
     // room information; connected is an array of userids.
     owner: string;
     size: number;
-    connected: Array<string>;
+    connected: UserDisplayMap;
 };
+
+// RTC STUFF
+export type SDP = {
+    sdp: RTCSessionDescription
+}
+
+export type RTCFileRequest = {
+    name: string,
+    size: number
+}
+
+export type RTCFileReply = {
+    accept: boolean
+}
