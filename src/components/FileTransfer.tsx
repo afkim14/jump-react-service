@@ -228,7 +228,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             });
 
             // This sends it right after you put a file in. We might want a submit button
-            RTC.sendSocketMsg(Constants.FILE_TRANSFER_REQUEST, { name: file.name, size: file.size });
+            socket.emit(Constants.FILE_TRANSFER_REQUEST, { name: file.name, size: file.size });
         }
     }
 

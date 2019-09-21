@@ -111,13 +111,6 @@ class RTC {
     }
 
     /**
-     * Sends socket messages to backend.
-     */
-    sendSocketMsg = (msg: string, data: any): void => {
-        socket.emit(msg, data);
-    }
-
-    /**
      * Handles status change (open, close) on send channel.
      * If a custom status handler was set, that is also called.
      */
