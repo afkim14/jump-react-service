@@ -17,6 +17,11 @@ export type Room = {
     connected: UserDisplayMap;
 };
 
+export type RoomStatus = {
+    full: boolean;
+    owner: string;
+}
+
 // RTC STUFF
 export type SDP = {
     sdp: RTCSessionDescription
