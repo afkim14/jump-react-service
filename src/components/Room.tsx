@@ -40,7 +40,7 @@ class Room extends Component<RoomProps, RoomState> {
         });
 
         /**
-         * Called when room status changes (ex. full)
+         * Called when room status changes (ex. full, owner)
          */
         socket.on(Constants.ROOM_STATUS, (status: Types.RoomStatus) => {
             this.setState({ full: status.full, owner: status.owner });
@@ -97,7 +97,7 @@ class Room extends Component<RoomProps, RoomState> {
                     this.state.full && (
                         <div>
                             <Messaging roomOwner={this.state.owner === socket.id} />
-                            {/* <FileTransfer roomOwner={this.state.room.owner === socket.id}/> */}
+                            {/* <FileTransfer roomOwner={this.state.owner === socket.id}/> */}
                         </div>
                     )
                 }

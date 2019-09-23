@@ -95,7 +95,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
          * Includes file name and file size, and prompts user to accept file transfer.
          */
         socket.on(Constants.FILE_TRANSFER_REQUEST, (data: Types.RTCFileRequest) => {
-            console.log(data.size);
             this.setState({ fileName: data.name, fileSize: data.size, requestTransferPermission: true });
         });
 
@@ -134,10 +133,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
      * Handles data sent over RTC send channel.
      */
     handleSendData(file: File): void {
-        if (!RTC.sendChannel) {
-            return;
-        }
-
         this.setState({
             statusMessageText: '',
             downloadAnchorText: '',
@@ -165,11 +160,8 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         };
 
         const handleFileReaderLoadEvent = (event: ProgressEvent): void => {
-            if (!RTC.sendChannel) {
-                return;
-            }
             const result = this.fileReader.result as ArrayBuffer;
-            RTC.sendChannel.send(result);
+            RTC.sendMessage(result);
             const progress = result.byteLength + this.state.sendProgressValue;
             this.setState({
                 sendProgressValue: progress,

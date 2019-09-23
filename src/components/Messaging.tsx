@@ -62,8 +62,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Handles messages sent over RTC send channel.
      */
     handleSendMessage(msg: string): void {
-        if (RTC.sendChannel) {
-            RTC.sendChannel.send(msg);
+        if (RTC.sendMessage(msg)) {
             this.addMessage(msg);
         }
     }

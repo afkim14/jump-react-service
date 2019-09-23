@@ -243,6 +243,19 @@ class RTC {
             this.receiveChannel.binaryType = type;
         }
     }
+
+    /**
+     * Sends data over send channel
+     */
+    sendMessage = (msg: any): boolean => {
+        if (this.sendChannel) {
+            this.sendChannel.send(msg);
+            return true;
+        }
+        return false;
+    }
+
+
 }
 
 const RTCInstance = new RTC();
