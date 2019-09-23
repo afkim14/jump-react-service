@@ -3,21 +3,22 @@ import './Room.css';
 import Constants from '../constants/Constants';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import * as Types from '../constants/Types';
-import SocketContext from '../constants/socket-context';
+import socket from '../constants/socket-context';
 
 import Messaging from './Messaging';
 import FileTransfer from './FileTransfer';
 
 type RoomProps = {
     roomid: string;
-    socket: SocketIOClient.Socket;
 };
 
 type RoomState = {
-    usersConnected: Types.UserDisplayMap;
+    usersConnected: Types.UserDisplayMap,
     validating: boolean;
     error: string;
     linkCopied: boolean;
+    full: boolean;
+    owner: string;
 };
 
 class Room extends Component<RoomProps, RoomState> {
@@ -26,34 +27,34 @@ class Room extends Component<RoomProps, RoomState> {
         validating: true,
         error: '',
         linkCopied: false,
+        full: false,
+        owner: '',
     };
 
     componentDidMount(): void {
         /**
          * This is called whenever a user joins or leaves the room.
          */
-        this.props.socket.on(Constants.USERS_CONNECTED, (users: Types.UserDisplayMap) => {
+        socket.on(Constants.USERS_CONNECTED, (users: Types.UserDisplayMap) => {
             this.setState({ usersConnected: users, validating: false });
-            console.log(`Users connected: ${users}`);
         });
 
         /**
-         * Called when room is full and ready for P2P connection.
-         * TODO: actually establish P2P connection given data from backend.
+         * Called when room status changes (ex. full, owner)
          */
-        this.props.socket.on(Constants.ROOM_FULLY_CONNECTED, (data: object) => {
-            console.log('Room fully connected');
+        socket.on(Constants.ROOM_STATUS, (status: Types.RoomStatus) => {
+            this.setState({ full: status.full, owner: status.owner });
         });
 
         /**
          * Failed to connect room either because room doesn't exist, or room is full.
          */
-        this.props.socket.on(Constants.CONNECT_TO_ROOM_FAIL, (error: string) => {
+        socket.on(Constants.CONNECT_TO_ROOM_FAIL, (error: string) => {
             this.setState({ error, validating: false });
         });
 
         // Attempt to connect to room when this component loads.
-        this.props.socket.emit(Constants.CONNECT_TO_ROOM, { roomid: this.props.roomid });
+        socket.emit(Constants.CONNECT_TO_ROOM, { roomid: this.props.roomid });
     }
 
     render(): React.ReactNode {
@@ -92,23 +93,17 @@ class Room extends Component<RoomProps, RoomState> {
                 <br />
                 <br />
                 <br />
-                <Messaging />
-                <FileTransfer />
+                {
+                    this.state.full && (
+                        <div>
+                            <Messaging roomOwner={this.state.owner === socket.id} />
+                            {/* <FileTransfer roomOwner={this.state.owner === socket.id}/> */}
+                        </div>
+                    )
+                }
             </div>
         );
     }
 }
 
-type RoomWithSocketProps = {
-    roomid: string;
-};
-
-const RoomWithSocket: React.SFC<RoomWithSocketProps> = props => {
-    return (
-        <SocketContext.Consumer>
-            {(socket: SocketIOClient.Socket): React.ReactNode => <Room {...props} socket={socket} />}
-        </SocketContext.Consumer>
-    );
-};
-
-export default RoomWithSocket;
+export default Room;

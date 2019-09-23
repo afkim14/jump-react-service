@@ -1,8 +1,19 @@
 import React, { Component, ChangeEvent } from 'react';
+import socket from '../constants/socket-context';
+import Constants from '../constants/Constants';
+import * as Types from '../constants/Types';
+import RTC from '../lib/RTC';
 
-type FileTransferProps = {};
+type FileTransferProps = {
+    roomOwner: boolean;
+};
 
 type FileTranferState = {
+    sendChannelOpen: boolean;
+    receiveChannelOpen: boolean;
+    fileName: string;
+    fileSize: number;
+    requestTransferPermission: boolean;
     sendFileButtonDisabled: boolean;
     abortButtonDisabled: boolean;
     fileInputDisabled: boolean;
@@ -19,6 +30,11 @@ type FileTranferState = {
 
 class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     state: FileTranferState = {
+        sendChannelOpen: false,
+        receiveChannelOpen: false,
+        fileName: '',
+        fileSize: 0,
+        requestTransferPermission: false,
         sendFileButtonDisabled: true,
         abortButtonDisabled: true,
         fileInputDisabled: true,
@@ -33,16 +49,12 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         anchorDownloadFileName: '',
     };
 
-    localConnection: RTCPeerConnection;
-    remoteConnection: RTCPeerConnection;
-    sendChannel: RTCDataChannel;
-    receiveChannel: RTCDataChannel | null;
     fileReader: FileReader;
     receiveBuffer: any[];
     receivedSize: number;
     bytesPrev: number;
-    timestampPrev: number;
     timestampStart: number | null;
+    timestampPrev: number;
     statsInterval: any;
     bitrateMax: number;
     fileInput: any;
@@ -50,73 +62,77 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     constructor(props: FileTransferProps) {
         super(props);
 
-        this.remoteConnection = new RTCPeerConnection();
-        this.localConnection = new RTCPeerConnection();
-        this.sendChannel = this.localConnection.createDataChannel('sendDataChannel');
-        this.receiveChannel = null;
         this.receiveBuffer = [];
         this.receivedSize = 0;
         this.bytesPrev = 0;
-        this.timestampPrev = 0;
-        this.timestampStart = null;
+        this.timestampStart = new Date().getTime();
+        this.timestampPrev = this.timestampStart;
         this.statsInterval = null;
         this.bitrateMax = 0;
         this.fileReader = new FileReader();
 
-        this.createConnection = this.createConnection.bind(this);
+        this.handleSendChannelStatusChange = this.handleSendChannelStatusChange.bind(this);
+        this.handleReceiveChannelStatusChange = this.handleReceiveChannelStatusChange.bind(this);
+        this.handleSendData = this.handleSendData.bind(this);
+        this.handleReceiveData = this.handleReceiveData.bind(this);
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
-        this.onSendChannelStateChange = this.onSendChannelStateChange.bind(this);
-        this.receiveChannelCallback = this.receiveChannelCallback.bind(this);
         this.handleAbortFileTransfer = this.handleAbortFileTransfer.bind(this);
-        this.onReceiveMessageCallback = this.onReceiveMessageCallback.bind(this);
+        this.acceptFileTransfer = this.acceptFileTransfer.bind(this);
+        this.closeDataChannels = this.closeDataChannels.bind(this);
+        this.displayStats = this.displayStats.bind(this);
+
+        RTC.connectPeers('fileDataChannel', this.props.roomOwner);
+        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+        RTC.setReceiveMessageHandler(this.handleReceiveData);
+        RTC.setSendChannelBinaryType('arraybuffer');
+        RTC.setReceiveChannelBinaryType('arraybuffer');
     }
 
-    async createConnection() {
-        this.setState({
-            abortButtonDisabled: false,
-            sendFileButtonDisabled: true,
+    componentDidMount(): void {
+        /**
+         * Received on a file transfer request from other person in the room.
+         * Includes file name and file size, and prompts user to accept file transfer.
+         */
+        socket.on(Constants.FILE_TRANSFER_REQUEST, (data: Types.RTCFileRequest) => {
+            this.setState({ fileName: data.name, fileSize: data.size, requestTransferPermission: true });
         });
 
-        this.sendChannel = this.localConnection.createDataChannel('sendDataChannel');
-        this.sendChannel.binaryType = 'arraybuffer';
-        this.sendChannel.addEventListener('error', error => console.error('Error in sendChannel:', error));
-
-        this.sendChannel.onopen = this.onSendChannelStateChange;
-        this.sendChannel.onclose = this.onSendChannelStateChange;
-        this.sendChannel.onerror = (error: RTCErrorEvent) => console.error('Error in sendChannel:', error);
-
-        this.localConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) =>
-            !event.candidate ||
-            this.remoteConnection.addIceCandidate(event.candidate).catch(this.handleAddCandidateError);
-
-        this.remoteConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) =>
-            !event.candidate ||
-            this.localConnection.addIceCandidate(event.candidate).catch(this.handleAddCandidateError);
-
-        this.remoteConnection.ondatachannel = this.receiveChannelCallback;
-
-        try {
-            const offer = await this.localConnection.createOffer();
-            await this.getLocalDescription(offer);
-        } catch (error) {
-            console.log('Failed to create session description: ', error);
-        }
-
-        this.setState({
-            fileInputDisabled: false,
+        /**
+         * Received on a file transfer reply from other person in the room.
+         * Starts sending data if accepted.
+         */
+        socket.on(Constants.FILE_TRANSFER_REPLY, (data: Types.RTCFileReply) => {
+            data.accept && this.handleSendData(this.fileInput.files[0]);
         });
     }
 
-    handleFileInputChange(event: ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files ? event.target.files[0] : null;
-        if (file) {
-            this.setState({
-                sendFileButtonDisabled: false,
-            });
+    componentWillUnmount(): void {
+        RTC.disconnect();
+    }
+
+    /**
+     * Custom handler for status change on send channel. Needed to re-render component.
+     */
+    handleSendChannelStatusChange(open: boolean): void {
+        this.setState({ sendChannelOpen: open })
+    }
+
+    /**
+     * Custom handler for receive change on send channel. Needed to re-render component.
+     */
+    async handleReceiveChannelStatusChange(open: boolean): Promise<any> {
+        this.setState({ receiveChannelOpen: open });
+        if (open) {
+            this.statsInterval = setInterval(this.displayStats, 500);
+            await this.displayStats();
         }
     }
 
-    sendData(file: File) {
+    /**
+     * Handles data sent over RTC send channel.
+     */
+    handleSendData(file: File): void {
         this.setState({
             statusMessageText: '',
             downloadAnchorText: '',
@@ -132,21 +148,20 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
         this.setState({
             sendProgressMax: file.size,
-            receiveProgressMax: file.size,
         });
 
         const chunkSize = 16384;
         this.fileReader.onerror = error => console.error('Error reading file:', error);
         this.fileReader.onabort = event => console.log('File reading aborted:', event);
 
-        const readSlice = (progressValueOffset: number) => {
+        const readSlice = (progressValueOffset: number): void => {
             const slice = file.slice(this.state.sendProgressValue, progressValueOffset + chunkSize);
             this.fileReader.readAsArrayBuffer(slice);
         };
 
-        const handleFileReaderLoadEvent = (event: ProgressEvent) => {
+        const handleFileReaderLoadEvent = (event: ProgressEvent): void => {
             const result = this.fileReader.result as ArrayBuffer;
-            this.sendChannel.send(result);
+            RTC.sendMessage(result);
             const progress = result.byteLength + this.state.sendProgressValue;
             this.setState({
                 sendProgressValue: progress,
@@ -160,95 +175,24 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         readSlice(0);
     }
 
-    handleAbortFileTransfer() {
-        if (this.fileReader && this.fileReader.readyState === 1) {
-            this.fileReader.abort();
-            this.setState({
-                sendFileButtonDisabled: false,
-            });
-        }
-    }
-
-    onSendChannelStateChange() {
-        const readyState = this.sendChannel.readyState;
-        if (readyState === 'open') {
-            this.sendData(this.fileInput.files[0]);
-        }
-    }
-
-    handleAddCandidateError() {
-        console.log('Failed to add candidate.');
-    }
-
-    receiveChannelCallback(event: RTCDataChannelEvent) {
-        this.receiveChannel = event.channel;
-        this.receiveChannel.binaryType = 'arraybuffer';
-        this.receiveChannel.onmessage = this.onReceiveMessageCallback;
-        this.receiveChannel.onopen = this.onReceiveChannelStateChange;
-        this.receiveChannel.onclose = this.onReceiveChannelStateChange;
-
-        this.receivedSize = 0;
-        this.bitrateMax = 0;
-
-        this.setState({
-            downloadAnchorText: '',
-        });
-    }
-
-    // TODO: Use remote peers instead of only local
-    async getLocalDescription(description: RTCSessionDescriptionInit) {
-        await this.localConnection.setLocalDescription(description);
-        await this.remoteConnection.setRemoteDescription(description);
-
-        try {
-            const answer = await this.remoteConnection.createAnswer();
-            await this.getRemoteDescription(answer);
-        } catch (error) {
-            console.log('Failed to create session description: ', error);
-        }
-    }
-
-    // TODO: Use remote peers instead of local
-    async getRemoteDescription(description: RTCSessionDescriptionInit) {
-        await this.remoteConnection.setLocalDescription(description);
-        await this.localConnection.setRemoteDescription(description);
-    }
-
-    closeDataChannels() {
-        this.sendChannel.close();
-        if (this.receiveChannel) {
-            this.receiveChannel.close();
-        }
-
-        this.localConnection.close();
-        this.remoteConnection.close();
-        this.localConnection = new RTCPeerConnection();
-        this.remoteConnection = new RTCPeerConnection();
-
-        this.setState({
-            fileInputDisabled: false,
-            abortButtonDisabled: true,
-            sendFileButtonDisabled: false,
-        });
-    }
-
-    onReceiveMessageCallback(event: MessageEvent) {
+    /**
+     * Handles data received over RTC receive channel.
+     */
+    handleReceiveData(event: MessageEvent): void {
         this.receiveBuffer.push(event.data);
         this.receivedSize += event.data.byteLength;
         this.setState({
             receiveProgressValue: this.receivedSize,
         });
 
-        const file = this.fileInput.files[0];
-
-        if (this.receivedSize === file.size) {
+        if (this.receivedSize === this.state.fileSize) {
             const received = new Blob(this.receiveBuffer);
             this.receiveBuffer = [];
 
             this.setState({
                 anchorDownloadHref: URL.createObjectURL(received),
-                downloadAnchorText: `Click to download ${file.name} (${file.size} bytes)`,
-                anchorDownloadFileName: file.name,
+                downloadAnchorText: `Click to download ${this.state.fileName} (${this.state.fileSize} bytes)`,
+                anchorDownloadFileName: this.state.fileName,
             });
 
             const bitrate = Math.round((this.receivedSize * 8) / (new Date().getTime() - (this.timestampStart || 0)));
@@ -265,21 +209,62 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         }
     }
 
-    async onReceiveChannelStateChange() {
-        if (this.receiveChannel && this.receiveChannel.readyState === 'open') {
-            this.timestampStart = new Date().getTime();
-            this.timestampPrev = this.timestampStart;
-            this.statsInterval = setInterval(this.displayStats, 500);
-            await this.displayStats();
+    /**
+     * Handle file selection.
+     */
+    handleFileInputChange(event: ChangeEvent<HTMLInputElement>): void {
+        const file = event.target.files ? event.target.files[0] : null;
+        if (file) {
+            this.setState({
+                sendFileButtonDisabled: false,
+            });
+
+            // This sends it right after you put a file in. We might want a submit button
+            socket.emit(Constants.FILE_TRANSFER_REQUEST, { name: file.name, size: file.size });
         }
     }
 
-    async displayStats() {
-        if (!this.remoteConnection || this.remoteConnection.iceConnectionState !== 'connected') {
+    /**
+     * Handles file transfer abort.
+     */
+    handleAbortFileTransfer(): void {
+        if (this.fileReader && this.fileReader.readyState === 1) {
+            this.fileReader.abort();
+            this.setState({
+                sendFileButtonDisabled: false,
+            });
+        }
+    }
+
+    /**
+     * Response from receiver whether or not receiver wants to accept file transfer.
+     */
+    acceptFileTransfer(accept: boolean): void {
+        this.setState({ requestTransferPermission: false });
+        socket.emit(Constants.FILE_TRANSFER_REPLY, { accept });
+    }
+
+    /**
+     * Resets ui for next file transfer.
+     */
+    closeDataChannels(): void {
+        this.setState({
+            fileInputDisabled: false,
+            abortButtonDisabled: true,
+            sendFileButtonDisabled: false,
+        });
+    }
+
+    async displayStats(): Promise<any> {
+        if (!RTC.localConnection) {
             return;
         }
 
-        const stats: RTCStatsReport = await this.remoteConnection.getStats();
+        if (!RTC.localConnection || RTC.localConnection.iceConnectionState !== 'connected') {
+            return;
+        }
+
+        const stats: RTCStatsReport = await RTC.localConnection.getStats();
         let activateCandidatePair: any;
         stats.forEach(report => {
             if (report.type === 'transport') {
@@ -308,7 +293,21 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         }
     }
 
-    render() {
+    render(): React.ReactNode {
+        if (this.state.requestTransferPermission) {
+            return (
+                <div>
+                    {`Do you wish to accept ${this.state.fileName} of size ${this.state.fileSize}`}
+                    <button onClick={(): void => {this.acceptFileTransfer(true)}}>
+                        Accept 
+                    </button>
+                    <button onClick={(): void => {this.acceptFileTransfer(false)}}>
+                        Reject 
+                    </button>
+                </div>
+            )
+        }
+
         return (
             <div className="file-transfer">
                 File Transfer Component
@@ -319,16 +318,9 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                             id="file-input"
                             onChange={this.handleFileInputChange}
                             ref={ref => (this.fileInput = ref)}
-                            // disabled={this.state.fileInputDisabled}
+                            disabled={!this.state.sendChannelOpen}
                         />
                     </form>
-                    <button
-                        disabled={this.state.sendFileButtonDisabled}
-                        id="send-file-button"
-                        onClick={this.createConnection}
-                    >
-                        Send File
-                    </button>
                     <button
                         disabled={this.state.abortButtonDisabled}
                         id="abort-button"
@@ -339,11 +331,11 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                 </div>
                 <div className="file-transfer-progress">
                     <div className="file-transfer-progress-label">Send Progress:</div>
-                    <progress id="send-file-progress" max="0" value="0"></progress>
+                    <progress id="send-file-progress" max={this.state.sendProgressMax} value={this.state.sendProgressValue}></progress>
                 </div>
                 <div className="file-transfer-progress">
                     <div className="file-transfer-progress-label">Receive Progress:</div>
-                    <progress id="receive-file-progress" max="0" value="0"></progress>
+                    <progress id="receive-file-progress" max={this.state.receiveProgressMax} value={this.state.receiveProgressValue}></progress>
                 </div>
                 <div id="bitrate"></div>
                 <a id="download" href={this.state.anchorDownloadHref} download={this.state.anchorDownloadFileName}>

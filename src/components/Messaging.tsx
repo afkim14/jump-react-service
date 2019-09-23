@@ -1,172 +1,110 @@
 import React, { Component } from 'react';
+import RTC from '../lib/RTC';
 
-type MessagingProps = {};
+type MessagingProps = {
+    roomOwner: boolean;
+};
 
 type MessagingState = {
-    connectButtonDisabled: boolean;
-    disconnectButtonDisabled: boolean;
-    messageInputDisabled: boolean;
+    sendChannelOpen: boolean;
+    receiveChannelOpen: boolean;
     messageInputText: string;
     messages: string[];
 };
 
 class Messaging extends Component<MessagingProps, MessagingState> {
     state: MessagingState = {
-        connectButtonDisabled: false,
-        disconnectButtonDisabled: true,
-        messageInputDisabled: true,
+        sendChannelOpen: false,
+        receiveChannelOpen: false,
         messageInputText: '',
         messages: [],
     };
 
-    remoteConnection: RTCPeerConnection;
-    localConnection: RTCPeerConnection;
-    sendChannel: RTCDataChannel | null;
-    receiveChannel: RTCDataChannel | null;
-
     constructor(props: MessagingProps) {
         super(props);
+        this.handleSendChannelStatusChange = this.handleSendChannelStatusChange.bind(this);
+        this.handleReceiveChannelStatusChange = this.handleReceiveChannelStatusChange.bind(this);
+        this.handleSendMessage = this.handleSendMessage.bind(this);
+        this.handleReceiveMessage = this.handleReceiveMessage.bind(this);
         this.handleMessageInputChange = this.handleMessageInputChange.bind(this);
         this.handleMessageInputSubmit = this.handleMessageInputSubmit.bind(this);
-        this.handleReceiveMessage = this.handleReceiveMessage.bind(this);
+        this.addMessage = this.addMessage.bind(this);
 
-        this.localConnection = new RTCPeerConnection();
-        this.remoteConnection = new RTCPeerConnection();
-        this.sendChannel = null;
-        this.receiveChannel = null;
+        RTC.connectPeers('messageDataChannel', this.props.roomOwner);
+        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+        RTC.setReceiveMessageHandler(this.handleReceiveMessage);
     }
 
-    connectPeers = () => {
-        this.sendChannel = this.localConnection.createDataChannel('messageSendChannel');
+    /**
+     * Disconnect from RTC channels. The cool thing here is that if ANY user in the room leaves,
+     * all other users will re-render their components and since room is not full, they will also be disconnected.
+     */
+    componentWillUnmount(): void {
+        RTC.disconnect();
+    }
 
-        this.sendChannel.onopen = this.handleSendChannelStatusChange;
-        this.sendChannel.onclose = this.handleSendChannelStatusChange;
+    /**
+     * Custom handler for status change on send channel. Needed to re-render component.
+     */
+    handleSendChannelStatusChange(open: boolean): void {
+        this.setState({ sendChannelOpen: open })
+    }
 
-        this.remoteConnection.ondatachannel = this.receiveChannelCallback;
+    /**
+     * Custom handler for receive change on send channel. Needed to re-render component.
+     */
+    handleReceiveChannelStatusChange(open: boolean): void {
+        this.setState({ receiveChannelOpen: open });
+    }
 
-        // TODO: provide method of connection and agree over server, and not with single client
-        this.localConnection.onicecandidate = (e: RTCPeerConnectionIceEvent) =>
-            !e.candidate || this.remoteConnection.addIceCandidate(e.candidate).catch(this.handleAddCandidateError);
-
-        this.remoteConnection.onicecandidate = (e: RTCPeerConnectionIceEvent) =>
-            !e.candidate || this.localConnection.addIceCandidate(e.candidate).catch(this.handleAddCandidateError);
-
-        this.localConnection
-            .createOffer()
-            .then((offer: RTCSessionDescriptionInit) => this.localConnection.setLocalDescription(offer))
-            // TODO: send signal over server
-            .then(() =>
-                this.remoteConnection.setRemoteDescription(this.localConnection
-                    .localDescription as RTCSessionDescription),
-            )
-            .then(() => this.remoteConnection.createAnswer())
-            .then((answer: RTCSessionDescriptionInit) => this.remoteConnection.setLocalDescription(answer))
-            .then(() =>
-                this.localConnection.setRemoteDescription(this.remoteConnection
-                    .localDescription as RTCSessionDescription),
-            )
-            .catch(this.handleCreateDescriptionError);
-    };
-
-    disconnectPeers = () => {
-        (this.sendChannel as RTCDataChannel).close();
-        (this.receiveChannel as RTCDataChannel).close();
-
-        this.localConnection.close();
-        this.remoteConnection.close();
-
-        this.sendChannel = null;
-        this.receiveChannel = null;
-        this.localConnection = new RTCPeerConnection();
-        this.remoteConnection = new RTCPeerConnection();
-
-        this.setState({
-            connectButtonDisabled: false,
-            disconnectButtonDisabled: true,
-            messageInputDisabled: true,
-            messageInputText: '',
-        });
-    };
-
-    handleSendChannelStatusChange = (event: Event) => {
-        if (this.sendChannel) {
-            let state = this.sendChannel.readyState;
-
-            if (state === 'open') {
-                this.setState({
-                    connectButtonDisabled: true,
-                    disconnectButtonDisabled: false,
-                    messageInputDisabled: false,
-                });
-            } else {
-                this.setState({
-                    connectButtonDisabled: false,
-                    disconnectButtonDisabled: true,
-                    messageInputDisabled: true,
-                });
-            }
+    /**
+     * Handles messages sent over RTC send channel.
+     */
+    handleSendMessage(msg: string): void {
+        if (RTC.sendMessage(msg)) {
+            this.addMessage(msg);
         }
-    };
-
-    receiveChannelCallback = (event: RTCDataChannelEvent) => {
-        this.receiveChannel = event.channel;
-        this.receiveChannel.onmessage = this.handleReceiveMessage;
-        this.receiveChannel.onopen = this.handleReceiveChannelStatusChange;
-        this.receiveChannel.onclose = this.handleReceiveChannelStatusChange;
-    };
-
-    handleAddCandidateError = () => {
-        console.log('Something went wrong with adding the candidate.');
-    };
-
-    handleCreateDescriptionError = (error: Error) => {
-        console.log('Unable to create an offer due to error: ' + error.toString());
-    };
-
-    handleLocalAddCandidateSuccess() {
-        this.setState({
-            connectButtonDisabled: true,
-        });
     }
 
-    handleRemoteAddCandidateSuccess() {
-        this.setState({
-            disconnectButtonDisabled: false,
-        });
+     /**
+     * Handles messages received over RTC receive channel.
+     */
+    handleReceiveMessage(event: MessageEvent): void {
+        this.addMessage(event.data);
     }
 
-    handleReceiveMessage(event: MessageEvent) {
+    /**
+     * Adds message to display in UI
+     */
+    addMessage(msg: string): void {
         this.setState(state => {
-            const messages = [...state.messages, event.data];
+            const messages = [...state.messages, msg];
             return {
                 messages,
             };
         });
     }
 
-    handleReceiveChannelStatusChange() {
-        if (this.receiveChannel) {
-            console.log("Receive channel's status has changed to " + this.receiveChannel.readyState);
-        }
-    }
-
-    sendMessage(msg: string) {
-        (this.sendChannel as RTCDataChannel).send(msg);
-    }
-
-    handleMessageInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    /**
+     * Handles message input.
+     */
+    handleMessageInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
         this.setState({ messageInputText: event.currentTarget.value });
     }
 
-    handleMessageInputSubmit(event: React.FormEvent<HTMLFormElement>) {
+    /**
+     * Handles message submit.
+     */
+    handleMessageInputSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        this.sendMessage(this.state.messageInputText);
+        this.handleSendMessage(this.state.messageInputText);
         this.setState({
             messageInputText: '',
         });
     }
 
-    render() {
+    render(): React.ReactNode {
         const messages = this.state.messages.map((msg, idx) => (
             <p key={idx}>
                 {msg}
@@ -176,6 +114,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         return (
             <div className="message">
                 <div className="message-input">
+                    <div className="messages-inbox">{messages}</div>
                     <form onSubmit={this.handleMessageInputSubmit}>
                         <input
                             type="text"
@@ -183,26 +122,9 @@ class Messaging extends Component<MessagingProps, MessagingState> {
                             value={this.state.messageInputText}
                             onChange={this.handleMessageInputChange}
                         />
-                        <input type="submit" value="Send" disabled={this.state.messageInputDisabled} />
+                        <input type="submit" value="Send" disabled={!this.state.sendChannelOpen} />
                     </form>
                 </div>
-                <button
-                    id="connect-button"
-                    disabled={this.state.connectButtonDisabled}
-                    className="buttonleft"
-                    onClick={this.connectPeers}
-                >
-                    Connect
-                </button>
-                <button
-                    id="disconnect-button"
-                    className="button-right"
-                    disabled={this.state.disconnectButtonDisabled}
-                    onClick={this.disconnectPeers}
-                >
-                    Disconnect
-                </button>
-                <div className="messages-inbox">{messages}</div>
             </div>
         );
     }
