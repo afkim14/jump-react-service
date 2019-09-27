@@ -8,14 +8,16 @@ export type UserDisplay = {
     color: string;
 };
 
-export type UserRoomMap = { [userid: string]: string }; // Map from userid to roomid (needed to handle disconnects)
-export type RoomMap = { [roomid: string]: Room }; // All open rooms and relevant information
+export type ConnectedRoomMap = { [userid: string]: Room };
 export type Room = {
-    // room information; connected is an array of userids.
+    roomid: string;
     owner: string;
-    size: number;
-    connected: UserDisplayMap;
+    accepted: boolean;
+    invited: UserDisplayMap;
 };
+export type RoomInvite = {
+    sender: UserDisplay;
+}
 
 export type RoomStatus = {
     full: boolean;
