@@ -6,11 +6,12 @@ type CustomButtonProps = {
     onClick?: Function;
     style?: object;
     disabled?: boolean;
+    className?: string;
 };
 
-const CustomButton: React.SFC<CustomButtonProps> = ({ text, style, onClick, disabled }: CustomButtonProps) => (
+const CustomButton: React.SFC<CustomButtonProps> = ({ text, style, onClick, disabled, className }: CustomButtonProps) => (
     <button
-        className={disabled ? 'disabled-button' : 'custom-button'}
+        className={`${disabled ? 'disabled-button' : 'custom-button'} ${className}`}
         onClick={(): void => {
             if (onClick) {
                 onClick();

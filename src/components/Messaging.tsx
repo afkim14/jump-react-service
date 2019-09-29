@@ -1,15 +1,22 @@
 import React, { Component } from 'react';
 import RTC from '../lib/RTC';
+import Constants from '../constants/Constants';
+import CustomTextInput from './CustomTextInput';
+import * as Types from '../constants/Types';
+import './Messaging.css';
+import socket from '../constants/socket-context';
 
 type MessagingProps = {
-    roomOwner: boolean;
+    currentRoom: Types.Room;
+    onInitialSend: Function;
+    displayName: Types.UserDisplay;
 };
 
 type MessagingState = {
     sendChannelOpen: boolean;
     receiveChannelOpen: boolean;
     messageInputText: string;
-    messages: string[];
+    messages: Array<Types.Message>;
 };
 
 class Messaging extends Component<MessagingProps, MessagingState> {
@@ -17,7 +24,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         sendChannelOpen: false,
         receiveChannelOpen: false,
         messageInputText: '',
-        messages: [],
+        messages: this.props.currentRoom.messages,
     };
 
     constructor(props: MessagingProps) {
@@ -30,10 +37,14 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         this.handleMessageInputSubmit = this.handleMessageInputSubmit.bind(this);
         this.addMessage = this.addMessage.bind(this);
 
-        RTC.connectPeers('messageDataChannel', this.props.roomOwner);
-        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-        RTC.setReceiveMessageHandler(this.handleReceiveMessage);
+        socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
+            if (data.full) {
+                RTC.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
+                RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+                RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+                RTC.setReceiveMessageHandler(this.handleReceiveMessage);
+            }
+        });
     }
 
     /**
@@ -61,8 +72,14 @@ class Messaging extends Component<MessagingProps, MessagingState> {
     /**
      * Handles messages sent over RTC send channel.
      */
-    handleSendMessage(msg: string): void {
-        if (RTC.sendMessage(msg)) {
+    handleSendMessage(msg: Types.Message): void {
+        this.setState({ messageInputText: '' });
+        if (!this.props.currentRoom.requestSent) {
+            this.props.onInitialSend(msg);
+            return;
+        }
+
+        if (RTC.sendMessage(JSON.stringify(msg))) {
             this.addMessage(msg);
         }
     }
@@ -71,13 +88,13 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Handles messages received over RTC receive channel.
      */
     handleReceiveMessage(event: MessageEvent): void {
-        this.addMessage(event.data);
+        this.addMessage(JSON.parse(event.data));
     }
 
     /**
      * Adds message to display in UI
      */
-    addMessage(msg: string): void {
+    addMessage(msg: Types.Message): void {
         this.setState(state => {
             const messages = [...state.messages, msg];
             return {
@@ -98,7 +115,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      */
     handleMessageInputSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        this.handleSendMessage(this.state.messageInputText);
+        this.handleSendMessage({ sender: this.props.displayName, text: this.state.messageInputText});
         this.setState({
             messageInputText: '',
         });
@@ -106,24 +123,45 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
     render(): React.ReactNode {
         const messages = this.state.messages.map((msg, idx) => (
-            <p key={idx}>
-                {msg}
-                <br />
-            </p>
+            <div key={idx} className="message-container">
+                <span>
+                    <p className="messages-sender" style={{color: msg.sender.color}}>{msg.sender.displayName}</p>
+                    <p className="messages-text">{msg.text}</p>
+                </span>
+            </div>
         ));
+        const openConnection = !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
         return (
             <div className="message">
                 <div className="message-input">
-                    <div className="messages-inbox">{messages}</div>
-                    <form onSubmit={this.handleMessageInputSubmit}>
-                        <input
-                            type="text"
-                            size={64}
-                            value={this.state.messageInputText}
-                            onChange={this.handleMessageInputChange}
-                        />
-                        <input type="submit" value="Send" disabled={!this.state.sendChannelOpen} />
-                    </form>
+                    {
+                        this.state.messages.length > 0 && (
+                            <div className="messages-inbox">
+                                {messages}
+                            </div>
+                        )
+                    }
+                    <div className="messages-container">
+                        {
+                            openConnection ? (
+                                <form onSubmit={this.handleMessageInputSubmit}>
+                                    <CustomTextInput
+                                        placeholder={'Send a message'}
+                                        onChange={this.handleMessageInputChange}
+                                        value={this.state.messageInputText}
+                                        style={{
+                                            display: 'inline-block',
+                                            margin: 0,
+                                            width: '100%'
+                                        }}
+                                    />
+                                    <input className="messaging-submit-button" type="submit" value="Send" disabled={!openConnection} />
+                                </form>
+                            ) : (
+                                <p>Connecting ... please wait.</p>
+                            )
+                        }
+                    </div>
                 </div>
             </div>
         );

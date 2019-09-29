@@ -9,19 +9,38 @@ export type UserDisplay = {
 };
 
 export type ConnectedRoomMap = { [userid: string]: Room };
+
+export type ConnectedUserMap = { [userid: string]: { accepted: boolean, displayName: UserDisplay } }
+
 export type Room = {
     roomid: string;
     owner: string;
-    accepted: boolean;
-    invited: UserDisplayMap;
+    requestSent: boolean;
+    invited: ConnectedUserMap;
+    messages: Array<Message>;
+    files: Array<any>;
 };
+
 export type RoomInvite = {
     sender: UserDisplay;
+    roomid: string;
+    initialMessage: Message;
+}
+
+export type RoomInviteResponse = {
+    invitedBy: UserDisplay;
+    respondedBy: UserDisplay;
+    roomid: string;
 }
 
 export type RoomStatus = {
     full: boolean;
     owner: string;
+}
+
+export type Message = {
+    sender: UserDisplay;
+    text: string;
 }
 
 // RTC STUFF

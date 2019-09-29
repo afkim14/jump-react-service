@@ -5,7 +5,7 @@ import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 
 import LeftTabBar from './LeftTabBar';
-import NewRoom from './NewRoom';
+import TransferRequest from './TransferRequest';
 import Room from './Room';
 import './MainHome.css';
 
@@ -18,25 +18,33 @@ type MainHomeState = {
     displayName: Types.UserDisplay;
     users: Types.UserDisplayMap;
     searchResults: Array<Types.UserDisplay>;
-    invitedBy: Types.UserDisplay;
+    roomInvite: Types.RoomInvite;
 };
 
 let usersTrie: Record<string, any>;
+const emptyCurrentRoom = { owner: '', requestSent: false, invited: {}, roomid: '', messages: [], files: [] };
+const emptyDisplayName = { userid: '', displayName: '', color: '' };
+const emptyRoomInvite = {
+    sender: { userid: '', displayName: '', color: '' }, 
+    roomid: '', 
+    initialMessage: { 
+        sender: { userid: '', displayName: '', color: '' },
+        text: ''
+    }
+};
 
 export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     state: MainHomeState = {
         sendTo: '',
         rooms: {},
-        currentRoom: { owner: '', accepted: false, invited: {}, roomid: '' },
-        displayName: { userid: '', displayName: '', color: '' },
+        currentRoom: emptyCurrentRoom,
+        displayName: emptyDisplayName,
         users: {},
         searchResults: [],
-        invitedBy: { userid: '', displayName: '', color: '' }
+        roomInvite: emptyRoomInvite
     };
 
     componentDidMount(): void {
-        this.updateSearchResults = this.updateSearchResults.bind(this);
-
         // Get random username and a list of connected users
         socket.emit(Constants.GET_DISPLAY_NAME);
         socket.emit(Constants.GET_USERS);
@@ -53,13 +61,27 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
+            const newRooms = this.state.rooms;
             const updatedRoom = this.state.currentRoom;
             updatedRoom.roomid = roomInfo.roomid;
-            this.setState({ currentRoom: updatedRoom });
+            newRooms[updatedRoom.roomid] = updatedRoom;
+            this.setState({ rooms: newRooms, currentRoom: updatedRoom });
         });
 
         socket.on(Constants.SEND_ROOM_INVITES, (invite: Types.RoomInvite) => {
-            this.setState({ invitedBy: invite.sender });
+            this.setState({ roomInvite: invite });
+        });
+
+        socket.on(Constants.REJECT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
+            const newRooms = this.state.rooms;
+            newRooms[data.roomid].invited[data.respondedBy.userid].accepted = false;
+            this.setState({ rooms: newRooms });
+        });
+
+        socket.on(Constants.ACCEPT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
+            const newRooms = this.state.rooms;
+            newRooms[data.roomid].invited[data.respondedBy.userid].accepted = true;
+            this.setState({ rooms: newRooms });
         });
     }
 
@@ -71,7 +93,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     /**
      * Returns search result from trie
      */
-    updateSearchResults(search: string): void {
+    updateSearchResults = (search: string): void => {
         if (search === '') {
             this.setState({ searchResults: Object.values(this.state.users) });
             return;
@@ -84,54 +106,123 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Called when a user is clicked
      */
     selectUser = (displayName: Types.UserDisplay): void => {
-        // TODO: implement user click
-        if (this.state.rooms[displayName.userid]) {
-            this.setState({ currentRoom: this.state.rooms[displayName.userid] });
-        } else {
-            socket.emit(Constants.CREATE_ROOM, { receipients: [displayName] });
-            const newRooms = this.state.rooms;
-            const newRoom = {
-                roomid: '',
-                owner: this.state.displayName.userid,
-                accepted: false,
-                invited: {
-                    [this.state.displayName.userid]: this.state.displayName,
-                    [displayName.userid]: displayName
-                }
-            };
-            newRooms[displayName.userid] = newRoom;
-            this.setState({ rooms: newRooms, currentRoom: newRoom });
+        // If already an open room, just open it up
+        const roomsIds = Object.keys(this.state.rooms);
+        for (let i = 0; i < roomsIds.length; i++) {
+            if (this.state.rooms[roomsIds[i]].invited[displayName.userid]) {
+                this.setState({ currentRoom: this.state.rooms[roomsIds[i]] });
+                return;
+            }
         }
+        
+        const newRoom = {
+            roomid: '',
+            owner: this.state.displayName.userid,
+            requestSent: false,
+            invited: {
+                [this.state.displayName.userid]: {
+                    accepted: true,
+                    displayName: this.state.displayName,
+                },
+                [displayName.userid]: {
+                    accepted: false,
+                    displayName: displayName
+                }
+            },
+            messages: [],
+            files: []
+        };
+
+        socket.emit(Constants.CREATE_ROOM, { invited: newRoom.invited });
+        this.setState({ currentRoom: newRoom });
+
+        // Remove any rooms that were open but nothing was sent
+        Object.keys(this.state.rooms).forEach(roomid => {
+            if (!this.state.rooms[roomid].requestSent) {
+                delete this.state.rooms[roomid];
+            }
+        });
     };
 
-    render(): React.ReactNode {
-        if (this.state.invitedBy.userid !== '') {
-            return (
-                <div>
-                    <p>{`You were just invited by ${this.state.invitedBy.displayName}`}</p>
-                    <button>Accept</button>
-                    <button>Reject</button>
-                </div>
-            );
-        }
+    onInitialSend = (msg: Types.Message): void => {
+        const newCurrentRoom = this.state.currentRoom;
+        newCurrentRoom.requestSent = true;
+        newCurrentRoom.messages.push(msg);
+        socket.emit(Constants.SEND_ROOM_INVITES, {
+            invited: newCurrentRoom.invited, 
+            roomid: this.state.currentRoom.roomid,
+            initialMessage: newCurrentRoom.messages[0]
+        });
+        this.setState({ currentRoom: newCurrentRoom });
+    }
 
+    acceptRequest = (): void => {
+        socket.emit(Constants.ACCEPT_TRANSFER_REQUEST, {
+            invitedBy: this.state.roomInvite.sender,
+            respondedBy: this.state.displayName,
+            roomid: this.state.roomInvite.roomid
+        });
+
+        this.setState({ 
+            currentRoom: {
+                roomid: this.state.roomInvite.roomid,
+                owner: this.state.roomInvite.sender.displayName,
+                requestSent: true,
+                invited: {
+                    [this.state.roomInvite.sender.userid]: {
+                        accepted: true,
+                        displayName: this.state.roomInvite.sender,
+                    },
+                    [this.state.displayName.userid]: {
+                        accepted: true,
+                        displayName: this.state.displayName
+                    }
+                },
+                messages: [this.state.roomInvite.initialMessage],
+                files: []
+            },
+            roomInvite: emptyRoomInvite,
+        });
+    }
+
+    declineRequest = (): void => {
+        socket.emit(Constants.REJECT_TRANSFER_REQUEST, {
+            invitedBy: this.state.roomInvite.sender,
+            respondedBy: this.state.displayName,
+            roomid: this.state.roomInvite.roomid
+        });
+        this.setState({ roomInvite: emptyRoomInvite });
+    }
+
+    render(): React.ReactNode {
         return (
             <div>
+                <TransferRequest 
+                    roomInvite={this.state.roomInvite} 
+                    visible={this.state.roomInvite.sender.userid !== ''}
+                    acceptRequest={this.acceptRequest}
+                    declineRequest={this.declineRequest}
+                />
                 <LeftTabBar
                     displayName={this.state.displayName}
                     users={this.state.users}
                     updateSearchResults={this.updateSearchResults}
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
+                    rooms={this.state.rooms}
+                    currentRoom={this.state.currentRoom}
                 />
                 {
                     this.state.currentRoom.roomid !== '' ? (
-                        <NewRoom currentRoom={this.state.currentRoom} displayName={this.state.displayName} />
+                        <Room 
+                            currentRoom={this.state.currentRoom} 
+                            displayName={this.state.displayName} 
+                            onInitialSend={this.onInitialSend}
+                        />
                     ) : (
                         <div>{`Welcome, ${this.state.displayName.displayName}`}</div>
                     )
                 }
-                {/* {this.state.connectToRoom && <Room roomid={this.state.roomid} />} */}
             </div>
         );
     }
