@@ -58,6 +58,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     statsInterval: any;
     bitrateMax: number;
     fileInput: any;
+    rtc: RTC;
 
     constructor(props: FileTransferProps) {
         super(props);
@@ -81,12 +82,14 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.closeDataChannels = this.closeDataChannels.bind(this);
         this.displayStats = this.displayStats.bind(this);
 
-        RTC.connectPeers('fileDataChannel', this.props.roomOwner);
-        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-        RTC.setReceiveMessageHandler(this.handleReceiveData);
-        RTC.setSendChannelBinaryType('arraybuffer');
-        RTC.setReceiveChannelBinaryType('arraybuffer');
+        this.rtc = new RTC();
+
+        this.rtc.connectPeers('fileDataChannel', this.props.roomOwner);
+        this.rtc.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+        this.rtc.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+        this.rtc.setReceiveMessageHandler(this.handleReceiveData);
+        this.rtc.setSendChannelBinaryType('arraybuffer');
+        this.rtc.setReceiveChannelBinaryType('arraybuffer');
     }
 
     componentDidMount(): void {
@@ -108,14 +111,14 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     componentWillUnmount(): void {
-        RTC.disconnect();
+        this.rtc.disconnect();
     }
 
     /**
      * Custom handler for status change on send channel. Needed to re-render component.
      */
     handleSendChannelStatusChange(open: boolean): void {
-        this.setState({ sendChannelOpen: open })
+        this.setState({ sendChannelOpen: open });
     }
 
     /**
@@ -161,7 +164,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
         const handleFileReaderLoadEvent = (event: ProgressEvent): void => {
             const result = this.fileReader.result as ArrayBuffer;
-            RTC.sendMessage(result);
+            this.rtc.sendMessage(result);
             const progress = result.byteLength + this.state.sendProgressValue;
             this.setState({
                 sendProgressValue: progress,
@@ -256,15 +259,15 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     async displayStats(): Promise<any> {
-        if (!RTC.localConnection) {
+        if (!this.rtc.localConnection) {
             return;
         }
 
-        if (!RTC.localConnection || RTC.localConnection.iceConnectionState !== 'connected') {
+        if (!this.rtc.localConnection || this.rtc.localConnection.iceConnectionState !== 'connected') {
             return;
         }
 
-        const stats: RTCStatsReport = await RTC.localConnection.getStats();
+        const stats: RTCStatsReport = await this.rtc.localConnection.getStats();
         let activateCandidatePair: any;
         stats.forEach(report => {
             if (report.type === 'transport') {
@@ -298,14 +301,22 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             return (
                 <div>
                     {`Do you wish to accept ${this.state.fileName} of size ${this.state.fileSize}`}
-                    <button onClick={(): void => {this.acceptFileTransfer(true)}}>
-                        Accept 
+                    <button
+                        onClick={(): void => {
+                            this.acceptFileTransfer(true);
+                        }}
+                    >
+                        Accept
                     </button>
-                    <button onClick={(): void => {this.acceptFileTransfer(false)}}>
-                        Reject 
+                    <button
+                        onClick={(): void => {
+                            this.acceptFileTransfer(false);
+                        }}
+                    >
+                        Reject
                     </button>
                 </div>
-            )
+            );
         }
 
         return (
@@ -331,11 +342,19 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                 </div>
                 <div className="file-transfer-progress">
                     <div className="file-transfer-progress-label">Send Progress:</div>
-                    <progress id="send-file-progress" max={this.state.sendProgressMax} value={this.state.sendProgressValue}></progress>
+                    <progress
+                        id="send-file-progress"
+                        max={this.state.sendProgressMax}
+                        value={this.state.sendProgressValue}
+                    ></progress>
                 </div>
                 <div className="file-transfer-progress">
                     <div className="file-transfer-progress-label">Receive Progress:</div>
-                    <progress id="receive-file-progress" max={this.state.receiveProgressMax} value={this.state.receiveProgressValue}></progress>
+                    <progress
+                        id="receive-file-progress"
+                        max={this.state.receiveProgressMax}
+                        value={this.state.receiveProgressValue}
+                    ></progress>
                 </div>
                 <div id="bitrate"></div>
                 <a id="download" href={this.state.anchorDownloadHref} download={this.state.anchorDownloadFileName}>

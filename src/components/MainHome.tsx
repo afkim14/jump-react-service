@@ -8,6 +8,8 @@ import LeftTabBar from './LeftTabBar';
 import Room from './Room';
 import './MainHome.css';
 
+import Count from '../containers/count';
+
 type MainHomeProps = {
     roomid?: string;
 };
@@ -86,6 +88,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      */
     selectUser = (displayName: Types.UserDisplay) => {
         // TODO: implement user click
+        console.log('select user', displayName.displayName);
         return;
     };
 
@@ -99,7 +102,8 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
                 />
-                {this.state.connectToRoom && <Room roomid={this.state.roomid} />}
+                {this.state.connectToRoom && <Room roomid={this.state.roomid} displayName={this.state.displayName} />}
+                <Count />
             </div>
         );
     }

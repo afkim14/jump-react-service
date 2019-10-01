@@ -5,15 +5,16 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
 
-import Messaging from './Messaging';
+import Messaging from './MessagingContainer';
 import FileTransfer from './FileTransfer';
 
 type RoomProps = {
     roomid: string;
+    displayName: Types.UserDisplay;
 };
 
 type RoomState = {
-    usersConnected: Types.UserDisplayMap,
+    usersConnected: Types.UserDisplayMap;
     validating: boolean;
     error: string;
     linkCopied: boolean;
@@ -93,14 +94,12 @@ class Room extends Component<RoomProps, RoomState> {
                 <br />
                 <br />
                 <br />
-                {
-                    this.state.full && (
-                        <div>
-                            <Messaging roomOwner={this.state.owner === socket.id} />
-                            {/* <FileTransfer roomOwner={this.state.owner === socket.id}/> */}
-                        </div>
-                    )
-                }
+                {this.state.full && (
+                    <div>
+                        <Messaging roomOwner={this.state.owner === socket.id} displayName={this.props.displayName} />
+                        {/* <FileTransfer roomOwner={this.state.owner === socket.id} /> */}
+                    </div>
+                )}
             </div>
         );
     }

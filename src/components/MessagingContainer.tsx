@@ -1,16 +1,20 @@
 import React, { Component } from 'react';
+import { UserDisplay } from '../constants/Types';
 import RTC from '../lib/RTC';
-import { createMessage } from '../lib/message';
+import { createMessage, parseMessage } from '../lib/message';
+import { Message } from '../constants/Types';
+import MessageDisplay from './MessageDisplay';
 
 type MessagingProps = {
     roomOwner: boolean;
+    displayName: UserDisplay;
 };
 
 type MessagingState = {
     sendChannelOpen: boolean;
     receiveChannelOpen: boolean;
     messageInputText: string;
-    messages: string[];
+    messages: Message[];
 };
 
 class Messaging extends Component<MessagingProps, MessagingState> {
@@ -20,6 +24,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         messageInputText: '',
         messages: [],
     };
+    rtc: RTC;
 
     constructor(props: MessagingProps) {
         super(props);
@@ -30,11 +35,12 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         this.handleMessageInputChange = this.handleMessageInputChange.bind(this);
         this.handleMessageInputSubmit = this.handleMessageInputSubmit.bind(this);
         this.addMessage = this.addMessage.bind(this);
+        this.rtc = new RTC();
 
-        RTC.connectPeers('messageDataChannel', this.props.roomOwner);
-        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-        RTC.setReceiveMessageHandler(this.handleReceiveMessage);
+        this.rtc.connectPeers('messageDataChannel', this.props.roomOwner);
+        this.rtc.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+        this.rtc.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+        this.rtc.setReceiveMessageHandler(this.handleReceiveMessage);
     }
 
     /**
@@ -42,7 +48,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * all other users will re-render their components and since room is not full, they will also be disconnected.
      */
     componentWillUnmount(): void {
-        RTC.disconnect();
+        this.rtc.disconnect();
     }
 
     /**
@@ -63,8 +69,8 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Handles messages sent over RTC send channel.
      */
     handleSendMessage(msg: string): void {
-        if (RTC.sendMessage(msg)) {
-            this.addMessage(msg);
+        if (this.rtc.sendMessage(msg)) {
+            this.addMessage(parseMessage(msg));
         }
     }
 
@@ -72,13 +78,14 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Handles messages received over RTC receive channel.
      */
     handleReceiveMessage(event: MessageEvent): void {
-        this.addMessage(event.data);
+        const message = parseMessage(event.data);
+        this.addMessage(message);
     }
 
     /**
      * Adds message to display in UI
      */
-    addMessage(msg: string): void {
+    addMessage(msg: Message): void {
         this.setState(state => {
             const messages = [...state.messages, msg];
             return {
@@ -99,18 +106,16 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      */
     handleMessageInputSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        this.handleSendMessage(this.state.messageInputText);
+        const message = createMessage(this.props.displayName.displayName, this.state.messageInputText);
+        this.handleSendMessage(message);
         this.setState({
             messageInputText: '',
         });
     }
 
     render(): React.ReactNode {
-        const messages = this.state.messages.map((msg, idx) => (
-            <p key={idx}>
-                {msg}
-                <br />
-            </p>
+        const messages = this.state.messages.map((msg: Message, idx: number) => (
+            <MessageDisplay key={idx} message={msg} />
         ));
         return (
             <div className="message">

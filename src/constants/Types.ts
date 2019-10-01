@@ -20,18 +20,24 @@ export type Room = {
 export type RoomStatus = {
     full: boolean;
     owner: string;
-}
+};
 
 // RTC STUFF
 export type SDP = {
-    sdp: RTCSessionDescription
-}
+    sdp: RTCSessionDescription;
+};
 
 export type RTCFileRequest = {
-    name: string,
-    size: number
-}
+    name: string;
+    size: number;
+};
 
 export type RTCFileReply = {
-    accept: boolean
-}
+    accept: boolean;
+};
+
+export type Message = {
+    sender: string;
+    text: string;
+    timestamp: string; // ISO-8601
+};
