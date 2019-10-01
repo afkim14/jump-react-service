@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import RTC from '../lib/RTC';
+import { createMessage } from '../lib/message';
 
 type MessagingProps = {
     roomOwner: boolean;
@@ -48,7 +49,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Custom handler for status change on send channel. Needed to re-render component.
      */
     handleSendChannelStatusChange(open: boolean): void {
-        this.setState({ sendChannelOpen: open })
+        this.setState({ sendChannelOpen: open });
     }
 
     /**
@@ -67,7 +68,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         }
     }
 
-     /**
+    /**
      * Handles messages received over RTC receive channel.
      */
     handleReceiveMessage(event: MessageEvent): void {

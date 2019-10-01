@@ -8,7 +8,7 @@ type CustomButtonProps = {
     disabled?: boolean;
 };
 
-const CustomButton: React.SFC<CustomButtonProps> = ({ text, style, onClick, disabled }: CustomButtonProps) => (
+const CustomButton: React.FC<CustomButtonProps> = ({ text, style, onClick, disabled }: CustomButtonProps) => (
     <button
         className={disabled ? 'disabled-button' : 'custom-button'}
         onClick={(): void => {

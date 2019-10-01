@@ -7,7 +7,7 @@ type UserContainerProps = {
     onClick: (displayName: Types.UserDisplay) => void;
 };
 
-const UserContainer: React.SFC<UserContainerProps> = ({ displayName, onClick }: UserContainerProps) => {
+const UserContainer: React.FC<UserContainerProps> = ({ displayName, onClick }: UserContainerProps) => {
     return (
         <div
             className="user-container"
