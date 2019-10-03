@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import { UserDisplay } from '../constants/Types';
 import RTC from '../lib/RTC';
 import Constants from '../constants/Constants';
-import CustomTextInput from './CustomTextInput';
+import CustomTextInput from '../components/CustomTextInput';
 import * as Types from '../constants/Types';
 import './Messaging.css';
 import socket from '../constants/socket-context';
+import MessageContainer from '../components/MessageContainer';
 
 type MessagingProps = {
     currentRoom: Types.Room;
@@ -123,17 +124,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
     render(): React.ReactNode {
         const messages =
-            this.state.messages &&
-            this.state.messages.map((msg, idx) => (
-                <div key={idx} className="message-container">
-                    <span>
-                        <p className="messages-sender" style={{ color: msg.sender.color }}>
-                            {msg.sender.displayName}
-                        </p>
-                        <p className="messages-text">{msg.text}</p>
-                    </span>
-                </div>
-            ));
+            this.state.messages && this.state.messages.map((msg, idx) => <MessageContainer key={idx} message={msg} />);
         const openConnection =
             !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
         return (

@@ -8,7 +8,6 @@ import LeftTabBar from '../components/LeftTabBar';
 import TransferRequest from '../components/TransferRequest';
 import Room from '../components/Room';
 import MainWelcome from '../components/MainWelcome';
-import './MainHome.css';
 
 type MainHomeProps = {};
 
@@ -19,7 +18,6 @@ type MainHomeState = {
     users: Types.UserDisplayMap;
     searchResults: Array<Types.UserDisplay>;
     roomInvite: Types.RoomInvite;
-    copied: boolean;
 };
 
 let usersTrie: Record<string, any>;
@@ -48,7 +46,6 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         users: {},
         searchResults: [],
         roomInvite: emptyRoomInvite,
-        copied: false,
     };
 
     componentDidMount(): void {

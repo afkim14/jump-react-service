@@ -1,3 +1,9 @@
+.main-welcome-container {
+    width: calc(100% - 300px);
+    float: left;
+    position: relative;
+}
+
 .main-welcome-msg {
     font-size: 30px;
     margin: 0px;
@@ -15,12 +21,6 @@
     font-weight: bold;
 }
 
-.main-welcome-container {
-    width: calc(100% - 300px);
-    float: left;
-    position: relative;
-}
-
 .main-sub-msg {
     margin: 0px;
     margin-top: 50px;
@@ -35,7 +35,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background-color: #F4976C;
+    background-color: #f4976c;
     float: left;
     margin-left: 40px;
 }
@@ -52,11 +52,4 @@
     margin-top: 4px;
     margin-left: 10px;
     float: left;
-}
-
-.main-share-btn {
-    float: none;
-    margin: 0px;
-    margin-left: 40px;
-    margin-top: 20px;
 }

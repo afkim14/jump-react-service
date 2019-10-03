@@ -3,7 +3,7 @@ import './Room.css';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
-import Messaging from './Messaging';
+import Messaging from '../views/Messaging';
 import FileTransfer from '../views/FileTransfer';
 
 type RoomProps = {

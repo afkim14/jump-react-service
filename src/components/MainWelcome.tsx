@@ -1,5 +1,7 @@
 import React, { FC } from 'react';
+
 import { UserDisplay } from '../constants/Types';
+import './MainWelcome.css';
 
 type MainWelcomeProps = {
     userDisplay: UserDisplay;
