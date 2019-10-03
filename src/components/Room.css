@@ -1,31 +1,46 @@
-.room-container {
-    display: inline-block;
+.room-connection-container {
+    float: left;
+    width: calc(100% - 300px);
+    display: block;
 }
 
-.room-welcome-msg {
+.room-receipient-circle-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    margin: 0px auto;
+    margin-top: 200px;
+}
+
+.room-receipient-username {
+    text-align: center;
     font-weight: bold;
-    font-size: 30px;
 }
 
-.room-link {
+.room-connection-msg {
+    text-align: center;
+}
+
+.room-connected-container {
+    
+}
+
+.room-connected-receipient-circle-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    float: left;
+    opacity: 0.7;
+    margin-left: 20px;
+}
+
+.room-connected-receipient-username {
+    display: inline-block;
+    margin: 0px;
+    margin-top: -10px;
+    margin-left: 10px;
     padding: 10px;
-    background-color: #d8d8d8;
-    cursor: pointer;
-    margin-bottom: 0px;
-}
-
-.room-link-copy-msg {
-    color: #3e3e3e;
-    font-style: italic;
-    margin-top: 5px;
-}
-
-.connected-users-header {
     font-weight: bold;
     font-size: 20px;
-}
-
-.connected-user-container {
-    display: inline-block;
-    margin-right: 20px;
 }

@@ -1,0 +1,62 @@
+.main-welcome-msg {
+    font-size: 30px;
+    margin: 0px;
+    margin-left: 40px;
+    margin-top: 60px;
+    float: left;
+}
+
+.main-welcome-msg-username {
+    float: left;
+    margin: 0px;
+    font-size: 30px;
+    margin-top: 60px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.main-welcome-container {
+    width: calc(100% - 300px);
+    float: left;
+    position: relative;
+}
+
+.main-sub-msg {
+    margin: 0px;
+    margin-top: 50px;
+    margin-left: 40px;
+}
+
+.main-step-container {
+    margin-top: 20px;
+}
+
+.main-step-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #F4976C;
+    float: left;
+    margin-left: 40px;
+}
+
+.main-step-number {
+    color: #ffffff;
+    text-align: center;
+    margin: 0px;
+    margin-top: 4px;
+}
+
+.main-step-inst {
+    margin: 0px;
+    margin-top: 4px;
+    margin-left: 10px;
+    float: left;
+}
+
+.main-share-btn {
+    float: none;
+    margin: 0px;
+    margin-left: 40px;
+    margin-top: 20px;
+}

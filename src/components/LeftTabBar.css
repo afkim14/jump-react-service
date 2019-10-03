@@ -1,6 +1,6 @@
 .left-tab-bar-container {
     width: 300px;
-    background-color: #eaeaea;
+    background-color: #303C6C;
     height: 100vh;
     float: left;
 }
@@ -8,7 +8,7 @@
 .left-tab-bar-logo-text {
     font-size: 25px;
     font-weight: bold;
-    color: #000;
+    color: #F0EBF4;
     display: inline-block;
     margin-top: 20px;
     margin-left: 20px;
@@ -26,8 +26,9 @@
 
 .left-tab-bar-header {
     font-size: 18px;
-    color: #3e3e3e;
+    color: #F0EBF4;
     font-weight: bold;
     padding-left: 20px;
     clear: both;
+    opacity: 0.5;
 }

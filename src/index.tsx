@@ -15,7 +15,6 @@ import { NotFoundPage } from './components/NotFoundPage';
 const routes = {
     '/': () => <Login />,
     '/home': () => <MainHome />,
-    '/home/:roomid': ({ roomid }: { [roomid: string]: string }) => <MainHome roomid={roomid} />,
 };
 
 // TODO: Couldn't find what type this is supposed to be

@@ -1,8 +1,8 @@
 .custom-text-input {
     width: 350px;
     height: 20px;
-    background-color: #eaeaea;
-    color: #000;
+    background-color: #232E51;
+    color: #FBFBF2;
     font-size: 15px;
     outline: none;
     border: none;
@@ -16,6 +16,11 @@
     transition: box-shadow 0.3s ease;
 }
 
+.custom-text-input::placeholder {
+    color: #FBFBF2;
+    opacity: 0.4;
+}
+
 .custom-text-input:focus {
-    box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 5px 5px 2px #232E51;
 }

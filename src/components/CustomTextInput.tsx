@@ -6,6 +6,7 @@ type CustomTextInputProps = {
     placeholder: string;
     style?: object;
     type?: string;
+    value?: string;
 };
 
 const CustomTextInput: React.SFC<CustomTextInputProps> = ({
@@ -13,6 +14,7 @@ const CustomTextInput: React.SFC<CustomTextInputProps> = ({
     placeholder,
     style,
     type,
+    value
 }: CustomTextInputProps) => (
     <input
         className="custom-text-input"
@@ -24,6 +26,7 @@ const CustomTextInput: React.SFC<CustomTextInputProps> = ({
         style={style}
         type={type}
         autoComplete="true"
+        value={value}
     />
 );
 

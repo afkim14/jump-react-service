@@ -1,0 +1,60 @@
+.messaging-submit-button {
+    display: none;
+}
+
+.messages-inbox {
+    background-color: #1A253F;
+    position: absolute;
+    bottom: 40px;
+    left: 300px;
+    width: calc(100% - 300px);
+    height: 150px;
+    overflow: scroll;
+}
+
+.messages-container {
+    position: absolute;
+    bottom: 0px;
+    left: 300px;
+    width: calc(100% - 300px);
+}
+
+.message-container {
+    position: relative;
+    float: left;
+    width: 100%;
+    height: 30px;
+}
+
+.message-container span {
+    position:absolute;
+    bottom:0;
+    left:0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.messages-sender {
+    float: left;
+    margin: 0px;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.messages-text {
+    float: left;
+    margin: 0px;
+    color: #FBFBF2;
+    opacity: 0.8;
+    margin-left: 20px;
+}
+
+.messages-connecting-msg {
+    background-color: #232E51;
+    padding: 10px;
+    position: relative;
+    top: 16px;
+    color: #FBFBF2;
+    padding-left: 20px;
+    font-style: italic;
+}

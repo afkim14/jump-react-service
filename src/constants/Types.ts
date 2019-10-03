@@ -8,13 +8,30 @@ export type UserDisplay = {
     color: string;
 };
 
-export type UserRoomMap = { [userid: string]: string }; // Map from userid to roomid (needed to handle disconnects)
-export type RoomMap = { [roomid: string]: Room }; // All open rooms and relevant information
+export type ConnectedRoomMap = { [userid: string]: Room };
+
+export type ConnectedUserMap = { [userid: string]: { accepted: boolean; displayName: UserDisplay } };
+
 export type Room = {
-    // room information; connected is an array of userids.
+    roomid: string;
     owner: string;
-    size: number;
-    connected: UserDisplayMap;
+    requestSent: boolean;
+    invited: ConnectedUserMap;
+    messages: Array<Message>;
+    files: Array<any>;
+};
+
+export type RoomInvite = {
+    sender: UserDisplay;
+    roomid: string;
+    initialMessage: Message;
+    initialFile: File;
+};
+
+export type RoomInviteResponse = {
+    invitedBy: UserDisplay;
+    respondedBy: UserDisplay;
+    roomid: string;
 };
 
 export type RoomStatus = {
@@ -22,22 +39,19 @@ export type RoomStatus = {
     owner: string;
 };
 
+export type Message = {
+    sender: UserDisplay;
+    text: string;
+};
+
+export type File = {
+    sender: UserDisplay;
+    fileName: string;
+    fileSize: number;
+    completed: boolean;
+};
+
 // RTC STUFF
 export type SDP = {
     sdp: RTCSessionDescription;
-};
-
-export type RTCFileRequest = {
-    name: string;
-    size: number;
-};
-
-export type RTCFileReply = {
-    accept: boolean;
-};
-
-export type Message = {
-    sender: string;
-    text: string;
-    timestamp: string; // ISO-8601
 };
