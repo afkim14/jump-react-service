@@ -30,7 +30,7 @@ export default class TransferRequest extends React.Component<TransferRequestProp
             <div className="transfer-request-background">
                 <div className="transfer-request-modal">
                     <div className="transfer-request-icon" style={{backgroundColor: this.props.roomInvite.sender.color}} />
-                    <p className="transfer-request-msg">{`${this.props.roomInvite.sender.displayName} has requested to start a file transfer.`}</p>
+                    <p className="transfer-request-msg"><strong>{this.props.roomInvite.sender.displayName}</strong> has requested to start a file transfer.</p>
                     <CustomButton className="transfer-request-accept-btn" text="Accept" onClick={this.handleOk} />
                     <CustomButton className="transfer-request-reject-btn" text="Decline" onClick={this.handleCancel} />
                 </div>

@@ -21,7 +21,7 @@ const UserContainer: React.SFC<UserContainerProps> = ({ displayName, onClick, re
 
     return (
         <div
-            className={`user-container ${currentRoomNoAction && 'user-container-current'}`}
+            className={`user-container ${currentRoom && 'user-container-current'} ${currentRoomNoAction && 'user-container-initial'}`}
             onMouseDown={(): void => {
                 onClick(displayName);
             }}

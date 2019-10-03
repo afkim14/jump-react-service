@@ -4,11 +4,15 @@ import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
 import Messaging from './Messaging';
+import FileTransfer from './FileTransfer';
 
 type RoomProps = {
     currentRoom: Types.Room;
     displayName: Types.UserDisplay;
-    onInitialSend: Function;
+    onInitialMessageSend: Function;
+    onInitialFileSend: Function;
+    addRoomMessage: Function;
+    updateCompletedFile: Function;
 };
 
 type RoomState = {};
@@ -48,18 +52,29 @@ class Room extends Component<RoomProps, RoomState> {
 
                                 return (
                                     <div key={i}>
-                                        <div className="room-connected-receipient-circle-icon" style={{ backgroundColor: this.props.currentRoom.invited[userid].displayName.color }} />
-                                        <p className="room-connected-receipient-username">{this.props.currentRoom.invited[userid].displayName.displayName}</p>
+                                        <p 
+                                            className="room-connected-receipient-username"
+                                            style={{ backgroundColor: this.props.currentRoom.invited[userid].displayName.color }}
+                                        >
+                                            {this.props.currentRoom.invited[userid].displayName.displayName}
+                                        </p>
                                     </div>
                                 );
                             })}
                         </div>
                     )
                 }
+                <FileTransfer
+                    displayName={this.props.displayName}
+                    currentRoom={this.props.currentRoom} 
+                    onInitialFileSend={this.props.onInitialFileSend}
+                    updateCompletedFile={this.props.updateCompletedFile}
+                />
                 <Messaging 
                     displayName={this.props.displayName}
                     currentRoom={this.props.currentRoom} 
-                    onInitialSend={this.props.onInitialSend}
+                    onInitialMessageSend={this.props.onInitialMessageSend}
+                    addRoomMessage={this.props.addRoomMessage}
                 />
             </div>
         );

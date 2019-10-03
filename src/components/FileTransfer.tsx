@@ -3,22 +3,24 @@ import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 import RTC from '../lib/RTC';
+import './FileTransfer.css';
+import fileImg from '../assets/images/file-01.png';
 
 type FileTransferProps = {
-    roomOwner: boolean;
+    currentRoom: Types.Room;
+    onInitialFileSend: Function;
+    displayName: Types.UserDisplay;
+    updateCompletedFile: Function;
 };
 
 type FileTranferState = {
     sendChannelOpen: boolean;
     receiveChannelOpen: boolean;
-    fileName: string;
-    fileSize: number;
     requestTransferPermission: boolean;
     sendFileButtonDisabled: boolean;
     abortButtonDisabled: boolean;
     fileInputDisabled: boolean;
     statusMessageText: string;
-    downloadAnchorText: string;
     bitrateDivText: string;
     sendProgressMax: number;
     receiveProgressMax: number;
@@ -26,20 +28,20 @@ type FileTranferState = {
     receiveProgressValue: number;
     anchorDownloadHref: string;
     anchorDownloadFileName: string;
+    dragging: boolean;
+    currentFile: Types.File;
+    currentFileToSend: any;
 };
 
 class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     state: FileTranferState = {
         sendChannelOpen: false,
         receiveChannelOpen: false,
-        fileName: '',
-        fileSize: 0,
         requestTransferPermission: false,
         sendFileButtonDisabled: true,
         abortButtonDisabled: true,
         fileInputDisabled: true,
         statusMessageText: '',
-        downloadAnchorText: '',
         bitrateDivText: '',
         sendProgressMax: 0,
         receiveProgressMax: 0,
@@ -47,6 +49,9 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         receiveProgressValue: 0,
         anchorDownloadHref: '',
         anchorDownloadFileName: '',
+        dragging: false,
+        currentFile: this.props.currentRoom.files.length > 0 ? this.props.currentRoom.files[0] : {},
+        currentFileToSend: null
     };
 
     fileReader: FileReader;
@@ -58,6 +63,8 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     statsInterval: any;
     bitrateMax: number;
     fileInput: any;
+    dropRef: any;
+    dragCounter: number;
 
     constructor(props: FileTransferProps) {
         super(props);
@@ -70,6 +77,8 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.statsInterval = null;
         this.bitrateMax = 0;
         this.fileReader = new FileReader();
+        this.dropRef = React.createRef();
+        this.dragCounter = 0;
 
         this.handleSendChannelStatusChange = this.handleSendChannelStatusChange.bind(this);
         this.handleReceiveChannelStatusChange = this.handleReceiveChannelStatusChange.bind(this);
@@ -77,37 +86,35 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.handleReceiveData = this.handleReceiveData.bind(this);
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
         this.handleAbortFileTransfer = this.handleAbortFileTransfer.bind(this);
-        this.acceptFileTransfer = this.acceptFileTransfer.bind(this);
         this.closeDataChannels = this.closeDataChannels.bind(this);
         this.displayStats = this.displayStats.bind(this);
 
-        RTC.connectPeers('fileDataChannel', this.props.roomOwner);
-        RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-        RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-        RTC.setReceiveMessageHandler(this.handleReceiveData);
-        RTC.setSendChannelBinaryType('arraybuffer');
-        RTC.setReceiveChannelBinaryType('arraybuffer');
+        socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
+            if (data.full) {
+                // TODO: NEW RTC
+                RTC.connectPeers('fileDataChannel', this.props.displayName.userid === data.owner);
+                RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+                RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+                RTC.setReceiveMessageHandler(this.handleReceiveData);
+                RTC.setSendChannelBinaryType('arraybuffer');
+                RTC.setReceiveChannelBinaryType('arraybuffer');
+            }
+        });
     }
 
     componentDidMount(): void {
-        /**
-         * Received on a file transfer request from other person in the room.
-         * Includes file name and file size, and prompts user to accept file transfer.
-         */
-        socket.on(Constants.FILE_TRANSFER_REQUEST, (data: Types.RTCFileRequest) => {
-            this.setState({ fileName: data.name, fileSize: data.size, requestTransferPermission: true });
-        });
-
-        /**
-         * Received on a file transfer reply from other person in the room.
-         * Starts sending data if accepted.
-         */
-        socket.on(Constants.FILE_TRANSFER_REPLY, (data: Types.RTCFileReply) => {
-            data.accept && this.handleSendData(this.fileInput.files[0]);
-        });
+        this.dropRef.current.addEventListener('dragenter', this.handleDragIn)
+        this.dropRef.current.addEventListener('dragleave', this.handleDragOut)
+        this.dropRef.current.addEventListener('dragover', this.handleDrag)
+        this.dropRef.current.addEventListener('drop', this.handleDrop)
     }
 
     componentWillUnmount(): void {
+        this.dropRef.current.removeEventListener('dragenter', this.handleDragIn)
+        this.dropRef.current.removeEventListener('dragleave', this.handleDragOut)
+        this.dropRef.current.removeEventListener('dragover', this.handleDrag)
+        this.dropRef.current.removeEventListener('drop', this.handleDrop)
+
         RTC.disconnect();
     }
 
@@ -135,7 +142,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     handleSendData(file: File): void {
         this.setState({
             statusMessageText: '',
-            downloadAnchorText: '',
         });
         if (file.size === 0) {
             this.setState({
@@ -185,15 +191,16 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             receiveProgressValue: this.receivedSize,
         });
 
-        if (this.receivedSize === this.state.fileSize) {
+        if (this.receivedSize === this.state.currentFile.fileSize) {
             const received = new Blob(this.receiveBuffer);
             this.receiveBuffer = [];
 
             this.setState({
                 anchorDownloadHref: URL.createObjectURL(received),
-                downloadAnchorText: `Click to download ${this.state.fileName} (${this.state.fileSize} bytes)`,
-                anchorDownloadFileName: this.state.fileName,
+                anchorDownloadFileName: this.state.currentFile.fileName,
             });
+
+            this.props.updateCompletedFile(this.props.currentRoom.roomid, this.state.currentFile);
 
             const bitrate = Math.round((this.receivedSize * 8) / (new Date().getTime() - (this.timestampStart || 0)));
             this.setState({
@@ -204,8 +211,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                 clearInterval(this.statsInterval);
                 this.statsInterval = null;
             }
-
-            this.closeDataChannels();
         }
     }
 
@@ -234,14 +239,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                 sendFileButtonDisabled: false,
             });
         }
-    }
-
-    /**
-     * Response from receiver whether or not receiver wants to accept file transfer.
-     */
-    acceptFileTransfer(accept: boolean): void {
-        this.setState({ requestTransferPermission: false });
-        socket.emit(Constants.FILE_TRANSFER_REPLY, { accept });
     }
 
     /**
@@ -293,56 +290,96 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         }
     }
 
-    render(): React.ReactNode {
-        if (this.state.requestTransferPermission) {
-            return (
-                <div>
-                    {`Do you wish to accept ${this.state.fileName} of size ${this.state.fileSize}`}
-                    <button onClick={(): void => {this.acceptFileTransfer(true)}}>
-                        Accept 
-                    </button>
-                    <button onClick={(): void => {this.acceptFileTransfer(false)}}>
-                        Reject 
-                    </button>
-                </div>
-            )
-        }
+    /**
+     * Handles file drag
+     */
+    handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
+    /**
+     * Handles file drag in
+     */
+    handleDragIn = (e: React.DragEvent<HTMLDivElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dragCounter++;
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+            this.setState({dragging: true})
+        }
+    }
+
+    /**
+     * Handles file drag out
+     */
+    handleDragOut = (e: React.DragEvent<HTMLDivElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dragCounter--;
+        if (this.dragCounter > 0) return
+        this.setState({dragging: false})
+    }
+
+    /**
+     * Handles file drop
+     */
+    handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            this.setState({ currentFileToSend: e.dataTransfer.files[0] });
+            this.props.onInitialFileSend({ 
+                sender: this.props.displayName,
+                fileName: e.dataTransfer.files[0].name,
+                fileSize: e.dataTransfer.files[0].size,
+                completed: false
+            });
+        }
+        this.setState({dragging: false})
+    }
+
+    render(): React.ReactNode {
+        const openConnection = !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
         return (
-            <div className="file-transfer">
-                File Transfer Component
-                <div>
-                    <form id="file-info">
-                        <input
-                            type="file"
-                            id="file-input"
-                            onChange={this.handleFileInputChange}
-                            ref={ref => (this.fileInput = ref)}
-                            disabled={!this.state.sendChannelOpen}
-                        />
-                    </form>
-                    <button
-                        disabled={this.state.abortButtonDisabled}
-                        id="abort-button"
-                        onClick={this.handleAbortFileTransfer}
-                    >
-                        Abort
-                    </button>
+            <div>
+                <div className={`file-transfer-container ${this.state.dragging && 'file-transfer-container-drag'}`} ref={this.dropRef}>
+                    {
+                        this.state.dragging && (
+                            <p className='file-transfer-text'>Drop file to send.</p>
+                        )
+                    }
                 </div>
-                <div className="file-transfer-progress">
-                    <div className="file-transfer-progress-label">Send Progress:</div>
-                    <progress id="send-file-progress" max={this.state.sendProgressMax} value={this.state.sendProgressValue}></progress>
-                </div>
-                <div className="file-transfer-progress">
-                    <div className="file-transfer-progress-label">Receive Progress:</div>
-                    <progress id="receive-file-progress" max={this.state.receiveProgressMax} value={this.state.receiveProgressValue}></progress>
-                </div>
-                <div id="bitrate"></div>
-                <a id="download" href={this.state.anchorDownloadHref} download={this.state.anchorDownloadFileName}>
-                    {this.state.downloadAnchorText}
-                </a>
-                <span id="status"></span>
+                {
+                    this.props.currentRoom.requestSent && this.props.currentRoom.files.map((file, index) => {
+                        return (
+                            <div className="file-container" key={index}>
+                                <img src={fileImg} className="file-icon" />
+                                <p className="file-name">{file.fileName}</p>
+                                <p className="file-size">{file.fileSize}</p>
+                                {
+                                    openConnection ? (
+                                        file.completed ? (
+                                            <a className='file-download' id="download" href={this.state.anchorDownloadHref} download={this.state.anchorDownloadFileName}>
+                                                Download
+                                            </a>
+                                        ) : (
+                                            this.state.currentFileToSend ? (
+                                                <p className='file-download' onClick={(): void => {this.handleSendData(this.state.currentFileToSend)}}>Send</p>
+                                            ) : (
+                                                <p className='file-downloading'>Requesting file...</p>
+                                            )
+                                        )
+                                    ) : (
+                                            <p className='file-downloading'>Connecting...</p>
+                                    )
+                                }
+                            </div>
+                        )
+                    })
+                }
             </div>
+            
         );
     }
 }

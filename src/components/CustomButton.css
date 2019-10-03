@@ -2,7 +2,7 @@
     height: 40px;
     width: 200px;
     color: #ffffff;
-    background-color: #5bbc82;
+    background-color: #F4976C;
     font-size: 15px;
     outline: none;
     border: none;
@@ -10,17 +10,17 @@
     margin: 10px auto 10px auto;
     display: block;
 
-    transition: border-radius 0.5s linear;
-    -webkit-transition: border-radius 0.5s linear;
-    -moz-transition: border-radius 0.5s linear;
-    -o-transition: border-radius 0.5s linear;
+    transition: border-radius 0.3s ease;
+    -webkit-transition: border-radius 0.3s ease;
+    -moz-transition: border-radius 0.3s ease;
+    -o-transition: border-radius 0.3s ease;
 }
 
 .disabled-button {
     height: 40px;
     width: 200px;
     color: #ffffff;
-    background-color: #3e3e3e;
+    background-color: #F4976C;
     font-size: 15px;
     outline: none;
     border: none;

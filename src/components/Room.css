@@ -1,6 +1,7 @@
 .room-connection-container {
     float: left;
     width: calc(100% - 300px);
+    display: block;
 }
 
 .room-receipient-circle-icon {
@@ -31,11 +32,15 @@
     border-radius: 5px;
     float: left;
     opacity: 0.7;
+    margin-left: 20px;
 }
 
 .room-connected-receipient-username {
-    float: left;
+    display: inline-block;
     margin: 0px;
-    margin-top: 4px;
+    margin-top: -10px;
     margin-left: 10px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 20px;
 }

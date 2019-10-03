@@ -3,7 +3,6 @@ import { A } from 'hookrouter';
 import './LeftTabBar.css';
 import CustomTextInput from './CustomTextInput';
 import UserContainer from './UserContainer';
-import Room from './Room';
 import * as Types from '../constants//Types';
 
 type LeftTabBarProps = {
@@ -59,17 +58,17 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 </A>
                 <UserContainer displayName={this.props.displayName} onClick={this.props.selectUser} />
                 <p className="left-tab-bar-header">Connections</p>
-                {Object.keys(this.props.rooms).map((room, i) => {
+                {Object.keys(this.props.rooms).map((roomid, i) => {
                     return (
                         <UserContainer
                             key={i}
-                            displayName={this.getOtherUserInRoom(this.props.rooms[room])}
+                            displayName={this.getOtherUserInRoom(this.props.rooms[roomid])}
                             onClick={(): void => {
-                                this.props.selectUser(this.getOtherUserInRoom(this.props.rooms[room]));
+                                this.props.selectUser(this.getOtherUserInRoom(this.props.rooms[roomid]));
                             }}
-                            requestSent={this.props.rooms[room].requestSent}
-                            accepted={this.checkRoomAccepted(this.props.rooms[room])}
-                            currentRoom={this.props.currentRoom.roomid === this.props.rooms[room].roomid}
+                            requestSent={this.props.rooms[roomid].requestSent}
+                            accepted={this.checkRoomAccepted(this.props.rooms[roomid])}
+                            currentRoom={this.props.currentRoom.roomid === roomid}
                         />
                     );
                 })}
@@ -77,7 +76,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 <CustomTextInput
                     onChange={this.handleSearchUser}
                     placeholder={'Search ...'}
-                    style={{ backgroundColor: '#d8d8d8', width: '80%' }}
+                    style={{ width: '80%' }}
                 />
                 {this.props.searchResults.map((user, i) => {
                     if (user.userid === this.props.displayName.userid) {

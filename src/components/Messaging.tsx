@@ -8,8 +8,9 @@ import socket from '../constants/socket-context';
 
 type MessagingProps = {
     currentRoom: Types.Room;
-    onInitialSend: Function;
+    onInitialMessageSend: Function;
     displayName: Types.UserDisplay;
+    addRoomMessage: Function;
 };
 
 type MessagingState = {
@@ -39,10 +40,11 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
         socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
             if (data.full) {
-                RTC.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
-                RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-                RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-                RTC.setReceiveMessageHandler(this.handleReceiveMessage);
+                // TODO: UNCOMMENT THIS OUT WHEN WE HAVE NEW RTC (SEPARATE FROM FILE TRANSFER ONE)
+                // RTC.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
+                // RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+                // RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+                // RTC.setReceiveMessageHandler(this.handleReceiveMessage);
             }
         });
     }
@@ -75,7 +77,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
     handleSendMessage(msg: Types.Message): void {
         this.setState({ messageInputText: '' });
         if (!this.props.currentRoom.requestSent) {
-            this.props.onInitialSend(msg);
+            this.props.onInitialMessageSend(msg);
             return;
         }
 
@@ -95,12 +97,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Adds message to display in UI
      */
     addMessage(msg: Types.Message): void {
-        this.setState(state => {
-            const messages = [...state.messages, msg];
-            return {
-                messages,
-            };
-        });
+        this.props.addRoomMessage(this.props.currentRoom.roomid, msg);
     }
 
     /**
@@ -122,7 +119,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
     }
 
     render(): React.ReactNode {
-        const messages = this.state.messages.map((msg, idx) => (
+        const messages = this.state.messages && this.state.messages.map((msg, idx) => (
             <div key={idx} className="message-container">
                 <span>
                     <p className="messages-sender" style={{color: msg.sender.color}}>{msg.sender.displayName}</p>
@@ -152,13 +149,14 @@ class Messaging extends Component<MessagingProps, MessagingState> {
                                         style={{
                                             display: 'inline-block',
                                             margin: 0,
-                                            width: '100%'
+                                            width: '100%',
+                                            paddingLeft: 20
                                         }}
                                     />
                                     <input className="messaging-submit-button" type="submit" value="Send" disabled={!openConnection} />
                                 </form>
                             ) : (
-                                <p>Connecting ... please wait.</p>
+                                <p className="messages-connecting-msg">Connecting ... please wait.</p>
                             )
                         }
                     </div>

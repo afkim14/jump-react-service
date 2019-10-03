@@ -32,6 +32,10 @@
     display: none;
 }
 
+.home-guest-button {
+    text-decoration: none;
+}
+
 @media only screen and (max-width: 500px) {
     .home-container {
         visibility: hidden;

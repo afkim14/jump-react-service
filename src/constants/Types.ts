@@ -25,6 +25,7 @@ export type RoomInvite = {
     sender: UserDisplay;
     roomid: string;
     initialMessage: Message;
+    initialFile: File;
 }
 
 export type RoomInviteResponse = {
@@ -43,16 +44,14 @@ export type Message = {
     text: string;
 }
 
+export type File = {
+    sender: UserDisplay;
+    fileName: string;
+    fileSize: number;
+    completed: boolean;
+}
+
 // RTC STUFF
 export type SDP = {
     sdp: RTCSessionDescription
-}
-
-export type RTCFileRequest = {
-    name: string,
-    size: number
-}
-
-export type RTCFileReply = {
-    accept: boolean
 }
