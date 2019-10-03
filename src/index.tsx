@@ -8,7 +8,7 @@ import * as serviceWorker from './constants/serviceWorker';
 import './index.css';
 
 import Login from './components/Login';
-import MainHome from './components/MainHome';
+import MainHome from './views/MainHome';
 import { NotFoundPage } from './components/NotFoundPage';
 
 // TODO: HELP, not sure how to fix these lint errors

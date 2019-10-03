@@ -9,12 +9,12 @@ type CustomTextInputProps = {
     value?: string;
 };
 
-const CustomTextInput: React.SFC<CustomTextInputProps> = ({
+const CustomTextInput: React.FC<CustomTextInputProps> = ({
     onChange,
     placeholder,
     style,
     type,
-    value
+    value,
 }: CustomTextInputProps) => (
     <input
         className="custom-text-input"

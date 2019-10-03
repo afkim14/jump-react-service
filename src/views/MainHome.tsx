@@ -3,13 +3,12 @@ import TrieSearch from 'trie-search';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
-import CopyToClipboard from 'react-copy-to-clipboard';
 
-import LeftTabBar from './LeftTabBar';
-import TransferRequest from './TransferRequest';
-import Room from './Room';
+import LeftTabBar from '../components/LeftTabBar';
+import TransferRequest from '../components/TransferRequest';
+import Room from '../components/Room';
+import MainWelcome from '../components/MainWelcome';
 import './MainHome.css';
-import CustomButton from './CustomButton';
 
 type MainHomeProps = {};
 
@@ -284,46 +283,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                         updateCompletedFile={this.updateCompletedFile}
                     />
                 ) : (
-                    <div className="main-welcome-container">
-                        <div>
-                            <p className="main-welcome-msg">{`Hello`}</p>
-                            <p className="main-welcome-msg-username">{`${this.state.displayName.displayName}!`}</p>
-                        </div>
-                        <div style={{ clear: 'both' }} />
-                        <p className="main-sub-msg">Begin sending files with the following steps:</p>
-                        <div className="main-step-container">
-                            <div className="main-step-icon">
-                                <p className="main-step-number">1</p>
-                            </div>
-                            <p className="main-step-inst">Search and select a user using left nav bar.</p>
-                        </div>
-                        <div style={{ clear: 'both' }} />
-                        <div className="main-step-container">
-                            <div className="main-step-icon">
-                                <p className="main-step-number">2</p>
-                            </div>
-                            <p className="main-step-inst">Send a message or a file request and wait for approval.</p>
-                        </div>
-                        <div style={{ clear: 'both' }} />
-                        <div className="main-step-container">
-                            <div className="main-step-icon">
-                                <p className="main-step-number">3</p>
-                            </div>
-                            <p className="main-step-inst">Track the transfer process with detailed information.</p>
-                        </div>
-                        <div style={{ clear: 'both', marginTop: 100 }} />
-                        <p className="main-sub-msg">Is your friend not signed up yet?</p>
-                        <CopyToClipboard
-                            onCopy={(): void => this.setState({ copied: true })}
-                            text="http://localhost:3000/home"
-                        >
-                            <CustomButton
-                                disabled={this.state.copied}
-                                className="main-share-btn"
-                                text={this.state.copied ? 'Copied' : 'Copy Sharing Link'}
-                            />
-                        </CopyToClipboard>
-                    </div>
+                    <MainWelcome userDisplay={this.state.displayName} />
                 )}
             </div>
         );

@@ -9,7 +9,7 @@ type CustomButtonProps = {
     className?: string;
 };
 
-const CustomButton: React.SFC<CustomButtonProps> = ({
+const CustomButton: React.FC<CustomButtonProps> = ({
     text,
     style,
     onClick,

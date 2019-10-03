@@ -10,7 +10,7 @@ type UserContainerProps = {
     currentRoom?: boolean;
 };
 
-const UserContainer: React.SFC<UserContainerProps> = ({
+const UserContainer: React.FC<UserContainerProps> = ({
     displayName,
     onClick,
     requestSent,
