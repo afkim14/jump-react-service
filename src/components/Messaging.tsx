@@ -41,10 +41,10 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
             if (data.full) {
                 // TODO: UNCOMMENT THIS OUT WHEN WE HAVE NEW RTC (SEPARATE FROM FILE TRANSFER ONE)
-                // RTC.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
-                // RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-                // RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-                // RTC.setReceiveMessageHandler(this.handleReceiveMessage);
+                RTC.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
+                RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+                RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+                RTC.setReceiveMessageHandler(this.handleReceiveMessage);
             }
         });
     }

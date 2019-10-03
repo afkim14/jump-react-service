@@ -92,12 +92,12 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
             if (data.full) {
                 // TODO: NEW RTC
-                RTC.connectPeers('fileDataChannel', this.props.displayName.userid === data.owner);
-                RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-                RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-                RTC.setReceiveMessageHandler(this.handleReceiveData);
-                RTC.setSendChannelBinaryType('arraybuffer');
-                RTC.setReceiveChannelBinaryType('arraybuffer');
+                // RTC.connectPeers('fileDataChannel', this.props.displayName.userid === data.owner);
+                // RTC.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
+                // RTC.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
+                // RTC.setReceiveMessageHandler(this.handleReceiveData);
+                // RTC.setSendChannelBinaryType('arraybuffer');
+                // RTC.setReceiveChannelBinaryType('arraybuffer');
             }
         });
     }
