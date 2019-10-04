@@ -6,7 +6,7 @@ import * as Types from '../constants/Types';
 
 import LeftTabBar from '../components/LeftTabBar';
 import TransferRequest from '../components/TransferRequest';
-import Room from '../components/Room';
+import Room from './Room';
 import MainWelcome from '../components/MainWelcome';
 
 type MainHomeProps = {};
