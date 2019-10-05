@@ -9,12 +9,14 @@ import TransferRequest from '../components/TransferRequest';
 import Room from './Room';
 import MainWelcome from '../components/MainWelcome';
 
-type MainHomeProps = {};
+type MainHomeProps = {
+    user: Types.UserDisplay;
+    setUser: (user: Types.UserDisplay) => void;
+};
 
 type MainHomeState = {
     rooms: Types.ConnectedRoomMap;
     currentRoom: Types.Room;
-    displayName: Types.UserDisplay; // Current user
     users: Types.UserDisplayMap;
     searchResults: Array<Types.UserDisplay>;
     roomInvite: Types.RoomInvite;
@@ -22,7 +24,6 @@ type MainHomeState = {
 
 let usersTrie: Record<string, any>;
 const emptyCurrentRoom = { owner: '', requestSent: false, invited: {}, roomid: '', messages: [], files: [] };
-const emptyDisplayName = { userid: '', displayName: '', color: '' };
 const emptyRoomInvite = {
     sender: { userid: '', displayName: '', color: '' },
     roomid: '',
@@ -42,7 +43,6 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     state: MainHomeState = {
         rooms: {},
         currentRoom: emptyCurrentRoom,
-        displayName: emptyDisplayName,
         users: {},
         searchResults: [],
         roomInvite: emptyRoomInvite,
@@ -54,7 +54,8 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         socket.emit(Constants.GET_USERS);
 
         socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
-            this.setState({ displayName });
+            // this.setState({ displayName });
+            this.props.setUser(displayName);
         });
 
         socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
@@ -108,7 +109,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      */
     selectUser = (displayName: Types.UserDisplay): void => {
         // If yourself
-        if (displayName.userid === this.state.displayName.userid) {
+        if (displayName.userid === this.props.user.userid) {
             return;
         }
 
@@ -124,12 +125,12 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         // Create new room
         const newRoom = {
             roomid: '',
-            owner: this.state.displayName.userid,
+            owner: this.props.user.userid,
             requestSent: false,
             invited: {
-                [this.state.displayName.userid]: {
+                [this.props.user.userid]: {
                     accepted: true,
-                    displayName: this.state.displayName,
+                    displayName: this.props.user,
                 },
                 [displayName.userid]: {
                     accepted: false,
@@ -187,7 +188,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     acceptRequest = (): void => {
         socket.emit(Constants.ACCEPT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
-            respondedBy: this.state.displayName,
+            respondedBy: this.props.user,
             roomid: this.state.roomInvite.roomid,
         });
 
@@ -201,9 +202,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     accepted: true,
                     displayName: this.state.roomInvite.sender,
                 },
-                [this.state.displayName.userid]: {
+                [this.props.user.userid]: {
                     accepted: true,
-                    displayName: this.state.displayName,
+                    displayName: this.props.user,
                 },
             },
             messages: this.state.roomInvite.initialMessage ? [this.state.roomInvite.initialMessage] : [],
@@ -224,7 +225,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     declineRequest = (): void => {
         socket.emit(Constants.REJECT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
-            respondedBy: this.state.displayName,
+            respondedBy: this.props.user,
             roomid: this.state.roomInvite.roomid,
         });
         this.setState({ roomInvite: emptyRoomInvite });
@@ -262,7 +263,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     declineRequest={this.declineRequest}
                 />
                 <LeftTabBar
-                    displayName={this.state.displayName}
+                    displayName={this.props.user}
                     users={this.state.users}
                     updateSearchResults={this.updateSearchResults}
                     searchResults={this.state.searchResults}
@@ -273,14 +274,14 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                 {this.state.currentRoom.roomid !== '' ? (
                     <Room
                         currentRoom={this.state.currentRoom}
-                        displayName={this.state.displayName}
+                        displayName={this.props.user}
                         onInitialMessageSend={this.onInitialMessageSend}
                         onInitialFileSend={this.onInitialFileSend}
                         addRoomMessage={this.addRoomMessage}
                         updateCompletedFile={this.updateCompletedFile}
                     />
                 ) : (
-                    <MainWelcome userDisplay={this.state.displayName} />
+                    <MainWelcome userDisplay={this.props.user} />
                 )}
             </div>
         );

@@ -1,8 +1,10 @@
 import RTC from '../services/RTC';
+import { UserDisplay } from '../constants/Types';
 
 export type StoreState = {
     count: number;
     // rtcConnections: RTCConnections;
+    user: UserDisplay;
 };
 
 export type RTCConnection = {
