@@ -80,15 +80,16 @@ class RTC {
                 .catch(this.handleCreateDescriptionError);
         }
 
-        setTimeout(() => {
-            if (!this.fullyConnected() && !this.attemptReconnectInterval) {
-                console.log('Attempting to reconnect');
-                this.attemptReconnectInterval = setInterval(() => {
-                    this.disconnect();
-                    this.connectPeers(channel, initiator);
-                }, RETRY_INTERVAL_MS);
-            }
-        }, TIMEOUT_MS);
+        // setTimeout(() => {
+        //     if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
+        //         console.log('Attempting to reconnect');
+        //         this.attemptReconnectInterval = setInterval(() => {
+        //             this.disconnect();
+        //             this.connectPeers(channel, initiator);
+        //             this.numReconnectRetries -= 1;
+        //         }, RETRY_INTERVAL_MS, this.numReconnectRetries);
+        //     }
+        // }, TIMEOUT_MS);
     };
 
     /**

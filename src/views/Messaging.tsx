@@ -65,6 +65,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Custom handler for status change on send channel. Needed to re-render component.
      */
     handleSendChannelStatusChange(open: boolean): void {
+        console.log('handle send channel status change ', open);
         this.setState({ sendChannelOpen: open });
     }
 
@@ -72,6 +73,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Custom handler for receive change on send channel. Needed to re-render component.
      */
     handleReceiveChannelStatusChange(open: boolean): void {
+        console.log('handle receive channel statu change ', open);
         this.setState({ receiveChannelOpen: open });
     }
 

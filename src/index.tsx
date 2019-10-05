@@ -19,7 +19,7 @@ const routes = {
 
 // TODO: Couldn't find what type this is supposed to be
 function App(): any {
-    const routeResult = useRoutes(routes) || NotFoundPage;
+    const routeResult = useRoutes(routes) || <NotFoundPage />;
     return routeResult;
 }
 

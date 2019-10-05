@@ -3,7 +3,7 @@ import './CustomButton.css';
 
 type CustomButtonProps = {
     text: string;
-    onClick?: Function;
+    onClick?: () => void;
     style?: object;
     disabled?: boolean;
     className?: string;

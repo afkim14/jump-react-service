@@ -2,7 +2,7 @@ import React from 'react';
 import './CustomTextInput.css';
 
 type CustomTextInputProps = {
-    onChange: Function;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     placeholder: string;
     style?: object;
     type?: string;
