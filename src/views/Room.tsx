@@ -33,12 +33,12 @@ class Room extends Component<RoomProps, RoomState> {
                 ) : (
                     <ConnectedRoom currentRoom={this.props.currentRoom} displayName={this.props.displayName} />
                 )}
-                <FileTransfer
+                {/* <FileTransfer
                     displayName={this.props.displayName}
                     currentRoom={this.props.currentRoom}
                     onInitialFileSend={this.props.onInitialFileSend}
                     updateCompletedFile={this.props.updateCompletedFile}
-                />
+                /> */}
                 <Messaging
                     displayName={this.props.displayName}
                     currentRoom={this.props.currentRoom}

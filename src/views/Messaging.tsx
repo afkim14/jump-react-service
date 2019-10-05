@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { UserDisplay } from '../constants/Types';
-import RTC from '../lib/RTC';
+import RTC from '../services/RTC';
 import Constants from '../constants/Constants';
 import CustomTextInput from '../components/CustomTextInput';
 import * as Types from '../constants/Types';

@@ -1,4 +1,4 @@
-import RTC from '../lib/RTC';
+import RTC from '../services/RTC';
 
 export type StoreState = {
     count: number;
@@ -20,3 +20,6 @@ export type ADD_RTC_CONNECTION = typeof ADD_RTC_CONNECTION;
 
 export const REMOVE_RTC_CONNECTION = 'REMOVE_RTC_CONNECTION';
 export type REMOVE_RTC_CONNECTION = typeof REMOVE_RTC_CONNECTION;
+
+export const SET_USER = 'SET_USER';
+export type SET_USER = typeof SET_USER;

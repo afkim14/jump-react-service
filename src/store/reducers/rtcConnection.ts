@@ -1,7 +1,7 @@
 import { RtcConnectionAction } from '../actions/rtcConnection';
 
 import { ADD_RTC_CONNECTION, REMOVE_RTC_CONNECTION, RTCConnection } from '../types';
-import RTC from '../../lib/RTC';
+import RTC from '../../services/RTC';
 
 const initialState = {};
 

@@ -2,7 +2,7 @@ import React, { Component, ChangeEvent } from 'react';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
-import RTC from '../lib/RTC';
+import RTC from '../services/RTC';
 import './FileTransfer.css';
 import fileImg from '../assets/images/file-01.png';
 
