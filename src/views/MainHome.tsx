@@ -12,18 +12,27 @@ import MainWelcome from '../components/MainWelcome';
 type MainHomeProps = {
     user: Types.UserDisplay;
     setUser: (user: Types.UserDisplay) => void;
+    rooms: Types.ConnectedRoomMap;
 };
 
 type MainHomeState = {
     rooms: Types.ConnectedRoomMap;
     currentRoom: Types.Room;
     users: Types.UserDisplayMap;
-    searchResults: Array<Types.UserDisplay>;
+    searchResults: Types.UserDisplay[];
     roomInvite: Types.RoomInvite;
 };
 
 let usersTrie: Record<string, any>;
-const emptyCurrentRoom = { owner: '', requestSent: false, invited: {}, roomid: '', messages: [], files: [] };
+const emptyCurrentRoom = {
+    owner: '',
+    requestSent: false,
+    invited: {},
+    roomid: '',
+    messages: [],
+    files: [],
+    rtcConnection: null,
+};
 const emptyRoomInvite = {
     sender: { userid: '', displayName: '', color: '' },
     roomid: '',
@@ -139,6 +148,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             },
             messages: [],
             files: [],
+            rtcConnection: null,
         };
 
         socket.emit(Constants.CREATE_ROOM, { invited: newRoom.invited });
@@ -209,6 +219,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             },
             messages: this.state.roomInvite.initialMessage ? [this.state.roomInvite.initialMessage] : [],
             files: this.state.roomInvite.initialFile ? [this.state.roomInvite.initialFile] : [],
+            rtcConnection: null,
         };
         newRooms[newCurrentRoom.roomid] = newCurrentRoom;
 

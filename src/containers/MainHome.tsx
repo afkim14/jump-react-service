@@ -8,6 +8,7 @@ import { UserDisplay } from '../constants/Types';
 
 const mapStateToProps = (state: StoreState) => ({
     user: state.user,
+    rooms: state.rooms,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

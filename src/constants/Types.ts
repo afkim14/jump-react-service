@@ -1,3 +1,5 @@
+import RTC from '../services/RTC';
+
 export type CreateRoom = { size: number }; // data sent by frontend on room creation information
 export type ConnectRoom = { roomid: string }; // data sent by frontend to connect to specific room
 export type UserDisplayMap = { [userid: string]: UserDisplay }; // Map from userid to display name
@@ -19,6 +21,7 @@ export type Room = {
     invited: ConnectedUserMap;
     messages: Array<Message>;
     files: Array<any>;
+    rtcConnection: RTC | null;
 };
 
 export type RoomInvite = {

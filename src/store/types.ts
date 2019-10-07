@@ -1,10 +1,11 @@
 import RTC from '../services/RTC';
-import { UserDisplay } from '../constants/Types';
+import { UserDisplay, ConnectedRoomMap } from '../constants/Types';
 
 export type StoreState = {
     count: number;
     // rtcConnections: RTCConnections;
     user: UserDisplay;
+    rooms: ConnectedRoomMap;
 };
 
 export type RTCConnection = {
@@ -25,3 +26,9 @@ export type REMOVE_RTC_CONNECTION = typeof REMOVE_RTC_CONNECTION;
 
 export const SET_USER = 'SET_USER';
 export type SET_USER = typeof SET_USER;
+
+export const ADD_ROOM = 'ADD_ROOM';
+export type ADD_ROOM = typeof ADD_ROOM;
+
+export const REMOVE_ROOM = 'REMOVE_ROOM';
+export type REMOVE_ROOM = typeof REMOVE_ROOM;
