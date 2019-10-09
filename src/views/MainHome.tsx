@@ -70,6 +70,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
             // FIXME: new Trie created everytime user logs in or disconnects from system
             usersTrie = new TrieSearch('displayName');
+            // TODO: move user search into backend
             usersTrie.addAll(Object.values(users));
             this.setState({ users, searchResults: Object.values(users) });
         });
