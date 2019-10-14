@@ -10,7 +10,13 @@ type UserContainerProps = {
     currentRoom?: boolean;
 };
 
-const UserContainer: React.SFC<UserContainerProps> = ({ displayName, onClick, requestSent, accepted, currentRoom }: UserContainerProps) => {
+const UserContainer: React.FC<UserContainerProps> = ({
+    displayName,
+    onClick,
+    requestSent,
+    accepted,
+    currentRoom,
+}: UserContainerProps) => {
     const currentRoomNoAction = !accepted && !requestSent && currentRoom;
     let status = <p></p>;
     if (accepted) {
@@ -21,13 +27,19 @@ const UserContainer: React.SFC<UserContainerProps> = ({ displayName, onClick, re
 
     return (
         <div
-            className={`user-container ${currentRoom && 'user-container-current'} ${currentRoomNoAction && 'user-container-initial'}`}
+            className={`user-container ${currentRoom && 'user-container-current'} ${currentRoomNoAction &&
+                'user-container-initial'}`}
             onMouseDown={(): void => {
                 onClick(displayName);
             }}
         >
-            <div className={`user-display-icon ${currentRoomNoAction && 'user-display-light'}`} style={{ backgroundColor: displayName.color }}></div>
-            <p className={`user-display-text ${currentRoomNoAction && 'user-display-light'}`}>{displayName.displayName}</p>
+            <div
+                className={`user-display-icon ${currentRoomNoAction && 'user-display-light'}`}
+                style={{ backgroundColor: displayName.color }}
+            ></div>
+            <p className={`user-display-text ${currentRoomNoAction && 'user-display-light'}`}>
+                {displayName.displayName}
+            </p>
             {status}
         </div>
     );

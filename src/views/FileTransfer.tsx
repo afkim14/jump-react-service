@@ -2,7 +2,7 @@ import React, { Component, ChangeEvent } from 'react';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
-import RTC from '../lib/RTC';
+import RTC from '../services/RTC';
 import './FileTransfer.css';
 import fileImg from '../assets/images/file-01.png';
 
@@ -51,7 +51,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         anchorDownloadFileName: '',
         dragging: false,
         currentFile: this.props.currentRoom.files.length > 0 ? this.props.currentRoom.files[0] : {},
-        currentFileToSend: null
+        currentFileToSend: null,
     };
 
     fileReader: FileReader;
@@ -63,6 +63,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     statsInterval: any;
     bitrateMax: number;
     fileInput: any;
+    rtc: RTC;
     dropRef: any;
     dragCounter: number;
 
@@ -79,6 +80,8 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.fileReader = new FileReader();
         this.dropRef = React.createRef();
         this.dragCounter = 0;
+
+        this.rtc = new RTC();
 
         this.handleSendChannelStatusChange = this.handleSendChannelStatusChange.bind(this);
         this.handleReceiveChannelStatusChange = this.handleReceiveChannelStatusChange.bind(this);
@@ -103,26 +106,26 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     componentDidMount(): void {
-        this.dropRef.current.addEventListener('dragenter', this.handleDragIn)
-        this.dropRef.current.addEventListener('dragleave', this.handleDragOut)
-        this.dropRef.current.addEventListener('dragover', this.handleDrag)
-        this.dropRef.current.addEventListener('drop', this.handleDrop)
+        this.dropRef.current.addEventListener('dragenter', this.handleDragIn);
+        this.dropRef.current.addEventListener('dragleave', this.handleDragOut);
+        this.dropRef.current.addEventListener('dragover', this.handleDrag);
+        this.dropRef.current.addEventListener('drop', this.handleDrop);
     }
 
     componentWillUnmount(): void {
-        this.dropRef.current.removeEventListener('dragenter', this.handleDragIn)
-        this.dropRef.current.removeEventListener('dragleave', this.handleDragOut)
-        this.dropRef.current.removeEventListener('dragover', this.handleDrag)
-        this.dropRef.current.removeEventListener('drop', this.handleDrop)
+        this.dropRef.current.removeEventListener('dragenter', this.handleDragIn);
+        this.dropRef.current.removeEventListener('dragleave', this.handleDragOut);
+        this.dropRef.current.removeEventListener('dragover', this.handleDrag);
+        this.dropRef.current.removeEventListener('drop', this.handleDrop);
 
-        RTC.disconnect();
+        this.rtc.disconnect();
     }
 
     /**
      * Custom handler for status change on send channel. Needed to re-render component.
      */
     handleSendChannelStatusChange(open: boolean): void {
-        this.setState({ sendChannelOpen: open })
+        this.setState({ sendChannelOpen: open });
     }
 
     /**
@@ -167,7 +170,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
         const handleFileReaderLoadEvent = (event: ProgressEvent): void => {
             const result = this.fileReader.result as ArrayBuffer;
-            RTC.sendMessage(result);
+            this.rtc.sendMessage(result);
             const progress = result.byteLength + this.state.sendProgressValue;
             this.setState({
                 sendProgressValue: progress,
@@ -253,15 +256,15 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     async displayStats(): Promise<any> {
-        if (!RTC.localConnection) {
+        if (!this.rtc.localConnection) {
             return;
         }
 
-        if (!RTC.localConnection || RTC.localConnection.iceConnectionState !== 'connected') {
+        if (!this.rtc.localConnection || this.rtc.localConnection.iceConnectionState !== 'connected') {
             return;
         }
 
-        const stats: RTCStatsReport = await RTC.localConnection.getStats();
+        const stats: RTCStatsReport = await this.rtc.localConnection.getStats();
         let activateCandidatePair: any;
         stats.forEach(report => {
             if (report.type === 'transport') {
@@ -296,7 +299,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
         e.preventDefault();
         e.stopPropagation();
-    }
+    };
 
     /**
      * Handles file drag in
@@ -306,9 +309,9 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         e.stopPropagation();
         this.dragCounter++;
         if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-            this.setState({dragging: true})
+            this.setState({ dragging: true });
         }
-    }
+    };
 
     /**
      * Handles file drag out
@@ -317,9 +320,9 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         e.preventDefault();
         e.stopPropagation();
         this.dragCounter--;
-        if (this.dragCounter > 0) return
-        this.setState({dragging: false})
-    }
+        if (this.dragCounter > 0) return;
+        this.setState({ dragging: false });
+    };
 
     /**
      * Handles file drop
@@ -329,57 +332,63 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         e.stopPropagation();
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             this.setState({ currentFileToSend: e.dataTransfer.files[0] });
-            this.props.onInitialFileSend({ 
+            this.props.onInitialFileSend({
                 sender: this.props.displayName,
                 fileName: e.dataTransfer.files[0].name,
                 fileSize: e.dataTransfer.files[0].size,
-                completed: false
+                completed: false,
             });
         }
-        this.setState({dragging: false})
-    }
+        this.setState({ dragging: false });
+    };
 
     render(): React.ReactNode {
-        const openConnection = !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
+        const openConnection =
+            !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
         return (
             <div>
-                <div className={`file-transfer-container ${this.state.dragging && 'file-transfer-container-drag'}`} ref={this.dropRef}>
-                    {
-                        this.state.dragging && (
-                            <p className='file-transfer-text'>Drop file to send.</p>
-                        )
-                    }
+                <div
+                    className={`file-transfer-container ${this.state.dragging && 'file-transfer-container-drag'}`}
+                    ref={this.dropRef}
+                >
+                    {this.state.dragging && <p className="file-transfer-text">Drop file to send.</p>}
                 </div>
-                {
-                    this.props.currentRoom.requestSent && this.props.currentRoom.files.map((file, index) => {
+                {this.props.currentRoom.requestSent &&
+                    this.props.currentRoom.files.map((file, index) => {
                         return (
                             <div className="file-container" key={index}>
-                                <img src={fileImg} className="file-icon" />
+                                <img src={fileImg} className="file-icon" alt="File is loading..." />
                                 <p className="file-name">{file.fileName}</p>
                                 <p className="file-size">{file.fileSize}</p>
-                                {
-                                    openConnection ? (
-                                        file.completed ? (
-                                            <a className='file-download' id="download" href={this.state.anchorDownloadHref} download={this.state.anchorDownloadFileName}>
-                                                Download
-                                            </a>
-                                        ) : (
-                                            this.state.currentFileToSend ? (
-                                                <p className='file-download' onClick={(): void => {this.handleSendData(this.state.currentFileToSend)}}>Send</p>
-                                            ) : (
-                                                <p className='file-downloading'>Requesting file...</p>
-                                            )
-                                        )
+                                {openConnection ? (
+                                    file.completed ? (
+                                        <a
+                                            className="file-download"
+                                            id="download"
+                                            href={this.state.anchorDownloadHref}
+                                            download={this.state.anchorDownloadFileName}
+                                        >
+                                            Download
+                                        </a>
+                                    ) : this.state.currentFileToSend ? (
+                                        <p
+                                            className="file-download"
+                                            onClick={(): void => {
+                                                this.handleSendData(this.state.currentFileToSend);
+                                            }}
+                                        >
+                                            Send
+                                        </p>
                                     ) : (
-                                            <p className='file-downloading'>Connecting...</p>
+                                        <p className="file-downloading">Requesting file...</p>
                                     )
-                                }
+                                ) : (
+                                    <p className="file-downloading">Connecting...</p>
+                                )}
                             </div>
-                        )
-                    })
-                }
+                        );
+                    })}
             </div>
-            
         );
     }
 }

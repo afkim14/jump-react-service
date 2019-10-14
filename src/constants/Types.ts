@@ -1,3 +1,5 @@
+import RTC from '../services/RTC';
+
 export type CreateRoom = { size: number }; // data sent by frontend on room creation information
 export type ConnectRoom = { roomid: string }; // data sent by frontend to connect to specific room
 export type UserDisplayMap = { [userid: string]: UserDisplay }; // Map from userid to display name
@@ -10,7 +12,7 @@ export type UserDisplay = {
 
 export type ConnectedRoomMap = { [userid: string]: Room };
 
-export type ConnectedUserMap = { [userid: string]: { accepted: boolean, displayName: UserDisplay } }
+export type ConnectedUserMap = { [userid: string]: { accepted: boolean; displayName: UserDisplay } };
 
 export type Room = {
     roomid: string;
@@ -19,6 +21,7 @@ export type Room = {
     invited: ConnectedUserMap;
     messages: Array<Message>;
     files: Array<any>;
+    rtcConnection: RTC | null;
 };
 
 export type RoomInvite = {
@@ -26,32 +29,32 @@ export type RoomInvite = {
     roomid: string;
     initialMessage: Message;
     initialFile: File;
-}
+};
 
 export type RoomInviteResponse = {
     invitedBy: UserDisplay;
     respondedBy: UserDisplay;
     roomid: string;
-}
+};
 
 export type RoomStatus = {
     full: boolean;
     owner: string;
-}
+};
 
 export type Message = {
     sender: UserDisplay;
     text: string;
-}
+};
 
 export type File = {
     sender: UserDisplay;
     fileName: string;
     fileSize: number;
     completed: boolean;
-}
+};
 
 // RTC STUFF
 export type SDP = {
-    sdp: RTCSessionDescription
-}
+    sdp: RTCSessionDescription;
+};

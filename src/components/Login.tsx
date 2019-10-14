@@ -4,7 +4,7 @@ import logoImg from '../assets/images/logo-01.png';
 import CustomButton from './CustomButton';
 import './Login.css';
 
-const Login: React.SFC = () => {
+const Login: React.FC = () => {
     return (
         <div>
             <div className="home-container">

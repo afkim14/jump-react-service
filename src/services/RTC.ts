@@ -24,14 +24,16 @@ class RTC {
         this.attemptReconnectInterval = null;
 
         socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
-            this.localConnection.setRemoteDescription(data.sdp)
+            this.localConnection
+                .setRemoteDescription(data.sdp)
                 .then(() => {
                     console.log('Receiver remote SDP set.');
-                    this.localConnection.createAnswer()
+                    this.localConnection
+                        .createAnswer()
                         .then((answer: RTCSessionDescriptionInit) => {
                             this.localConnection.setLocalDescription(answer);
                             socket.emit(Constants.RTC_DESCRIPTION_ANSWER, {
-                                sdp: this.localConnection.localDescription
+                                sdp: this.localConnection.localDescription,
                             });
                         })
                         .catch(this.handleCreateAnswerError);
@@ -40,7 +42,8 @@ class RTC {
         });
 
         socket.on(Constants.RTC_DESCRIPTION_ANSWER, (data: Types.SDP) => {
-            this.localConnection.setRemoteDescription(data.sdp)
+            this.localConnection
+                .setRemoteDescription(data.sdp)
                 .then(() => {
                     console.log('Sender remote SDP set.');
                 })
@@ -50,8 +53,8 @@ class RTC {
         socket.on(Constants.ICE_CANDIDATE, (data: RTCIceCandidate) => {
             this.localConnection.addIceCandidate(data).catch(this.handleAddCandidateError);
         });
-    } 
-    
+    }
+
     /**
      * Creates data channel and if initiator, creates offer and sends it over socket to room.
      * If sendChannel and receiveChannel does not open up in TIMEOUT_MS, attempt to reconnect.
@@ -71,21 +74,22 @@ class RTC {
                 .then(() => {
                     console.log('Sender SDP sent.');
                     socket.emit(Constants.RTC_DESCRIPTION_OFFER, {
-                        sdp: this.localConnection.localDescription
+                        sdp: this.localConnection.localDescription,
                     });
                 })
                 .catch(this.handleCreateDescriptionError);
         }
 
-        setTimeout(() => {
-            if (!this.fullyConnected() && !this.attemptReconnectInterval) {
-                console.log('Attempting to reconnect');
-                this.attemptReconnectInterval = setInterval(() => {
-                    this.disconnect();
-                    this.connectPeers(channel, initiator);
-                }, RETRY_INTERVAL_MS)
-            }
-        }, TIMEOUT_MS);
+        // setTimeout(() => {
+        //     if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
+        //         console.log('Attempting to reconnect');
+        //         this.attemptReconnectInterval = setInterval(() => {
+        //             this.disconnect();
+        //             this.connectPeers(channel, initiator);
+        //             this.numReconnectRetries -= 1;
+        //         }, RETRY_INTERVAL_MS, this.numReconnectRetries);
+        //     }
+        // }, TIMEOUT_MS);
     };
 
     /**
@@ -101,14 +105,19 @@ class RTC {
         this.sendChannel = null;
         this.receiveChannel = null;
         this.localConnection = new RTCPeerConnection();
-    }
+    };
 
     /**
      * Checks if ready to start data transmission over RTC channels.
      */
     fullyConnected = (): boolean | null => {
-        return this.sendChannel && this.sendChannel.readyState === 'open' && this.receiveChannel && this.receiveChannel.readyState === 'open';
-    }
+        return (
+            this.sendChannel &&
+            this.sendChannel.readyState === 'open' &&
+            this.receiveChannel &&
+            this.receiveChannel.readyState === 'open'
+        );
+    };
 
     /**
      * Handles status change (open, close) on send channel.
@@ -116,7 +125,7 @@ class RTC {
      */
     handleSendChannelStatusChange = (): void => {
         if (this.sendChannel) {
-            const open = this.sendChannel.readyState === 'open'
+            const open = this.sendChannel.readyState === 'open';
             console.log(`Send channel open status: ${open}`);
 
             if (this.fullyConnected()) {
@@ -146,7 +155,7 @@ class RTC {
                 this.customReceiveChannelStatusHandler(open);
             }
         }
-    }
+    };
 
     /**
      * Sends ICE candidate over socket to others in the room until agreed upon.
@@ -155,7 +164,7 @@ class RTC {
         if (e.candidate) {
             socket.emit(Constants.ICE_CANDIDATE, e.candidate);
         }
-    }
+    };
 
     /**
      * Error handling for creating SDP.
@@ -169,14 +178,14 @@ class RTC {
      */
     handleSetDescriptionError = (error: Error): void => {
         console.log(`Something went wrong when setting remote description: ${error.toString()}`);
-    }
+    };
 
     /**
      * Error handling for creating answer for an offer.
      */
     handleCreateAnswerError = (error: Error): void => {
         console.log(`Something went wrong when creating Answer to Offer. ${error.toString()}`);
-    }
+    };
 
     /**
      * Error handling for adding ICE candidate.
@@ -203,28 +212,28 @@ class RTC {
         if (this.customReceiveMessageHandler) {
             this.customReceiveMessageHandler(event);
         }
-    }
+    };
 
     /**
      * Sets custom handler for status change on send channel
      */
     setHandleSendChannelStatusChange = (handler: any): void => {
         this.customSendChannelStatusHandler = handler;
-    }
+    };
 
     /**
      * Sets custom handler for status change on receive channel
      */
     setHandleReceiveChannelStatusChange = (handler: any): void => {
         this.customReceiveChannelStatusHandler = handler;
-    }
+    };
 
     /**
      * Sets custom handler for on message received.
      */
     setReceiveMessageHandler = (handler: any): void => {
         this.customReceiveMessageHandler = handler;
-    }
+    };
 
     /**
      * Sets binary type for send channel
@@ -233,7 +242,7 @@ class RTC {
         if (this.sendChannel) {
             this.sendChannel.binaryType = type;
         }
-    }
+    };
 
     /**
      * Sets binary type for receive channel
@@ -242,7 +251,7 @@ class RTC {
         if (this.receiveChannel) {
             this.receiveChannel.binaryType = type;
         }
-    }
+    };
 
     /**
      * Sends data over send channel
@@ -253,10 +262,7 @@ class RTC {
             return true;
         }
         return false;
-    }
-
-
+    };
 }
 
-const RTCInstance = new RTC();
-export default RTCInstance;
+export default RTC;

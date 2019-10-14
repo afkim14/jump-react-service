@@ -1,6 +1,5 @@
 import React from 'react';
-import './NotFoundPage.css';
 
-export const NotFoundPage: React.SFC = () => {
+export const NotFoundPage: React.FC = () => {
     return <p>Page not found.</p>;
 };

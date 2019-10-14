@@ -3,7 +3,7 @@ import { A } from 'hookrouter';
 import './LeftTabBar.css';
 import CustomTextInput from './CustomTextInput';
 import UserContainer from './UserContainer';
-import * as Types from '../constants//Types';
+import * as Types from '../constants/Types';
 
 type LeftTabBarProps = {
     displayName: Types.UserDisplay;
@@ -11,8 +11,8 @@ type LeftTabBarProps = {
     selectUser: (displayName: Types.UserDisplay) => void;
     updateSearchResults: (search: string) => void;
     searchResults: Array<Types.UserDisplay>;
-    rooms: Types.ConnectedRoomMap,
-    currentRoom: Types.Room
+    rooms: Types.ConnectedRoomMap;
+    currentRoom: Types.Room;
 };
 
 type LeftTabBarState = {
@@ -36,10 +36,10 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 return room.invited[users[i]].displayName;
             }
         }
-        
+
         return this.props.displayName;
-    }
-    
+    };
+
     checkRoomAccepted = (room: Types.Room): boolean => {
         const users = Object.keys(room.invited);
         for (let i = 0; i < users.length; i++) {
@@ -48,7 +48,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
             }
         }
         return true;
-    }
+    };
 
     render(): React.ReactNode {
         return (
@@ -73,11 +73,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                     );
                 })}
                 <p className="left-tab-bar-header">All Users</p>
-                <CustomTextInput
-                    onChange={this.handleSearchUser}
-                    placeholder={'Search ...'}
-                    style={{ width: '80%' }}
-                />
+                <CustomTextInput onChange={this.handleSearchUser} placeholder={'Search ...'} style={{ width: '80%' }} />
                 {this.props.searchResults.map((user, i) => {
                     if (user.userid === this.props.displayName.userid) {
                         return;
