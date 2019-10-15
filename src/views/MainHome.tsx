@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import TrieSearch from 'trie-search';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
@@ -23,7 +22,6 @@ type MainHomeState = {
     roomInvite: Types.RoomInvite;
 };
 
-let usersTrie: Record<string, any>;
 const emptyCurrentRoom = {
     owner: '',
     requestSent: false,
@@ -63,16 +61,15 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         socket.emit(Constants.GET_USERS);
 
         socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
-            // this.setState({ displayName });
             this.props.setUser(displayName);
         });
 
         socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
-            // FIXME: new Trie created everytime user logs in or disconnects from system
-            usersTrie = new TrieSearch('displayName');
-            // TODO: move user search into backend
-            usersTrie.addAll(Object.values(users));
             this.setState({ users, searchResults: Object.values(users) });
+        });
+
+        socket.on(Constants.SEARCH_USERS, (searchResults: Types.UserDisplay[]) => {
+            this.setState({ searchResults });
         });
 
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
@@ -111,14 +108,14 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     updateSearchResults = (search: string): void => {
         search === ''
             ? this.setState({ searchResults: Object.values(this.state.users) })
-            : this.setState({ searchResults: usersTrie.get(search) });
+            : socket.emit(Constants.SEARCH_USERS, search);
     };
 
     /**
      * Called when a user is clicked
      */
     selectUser = (displayName: Types.UserDisplay): void => {
-        // If yourself
+        // If yourself, ignore
         if (displayName.userid === this.props.user.userid) {
             return;
         }

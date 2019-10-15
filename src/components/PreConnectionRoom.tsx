@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 
 import { Room, UserDisplay } from '../constants/Types';
+import './PreConnectionRoom.css';
 
 type PreConnectionRoomProps = {
     currentRoom: Room;
@@ -8,7 +9,7 @@ type PreConnectionRoomProps = {
 };
 
 const PreConnectionRoom: FC<PreConnectionRoomProps> = (props: PreConnectionRoomProps) => (
-    <div className="room-connection-container">
+    <div className="room-preconnection-container">
         {Object.keys(props.currentRoom.invited).map((userid, i) => {
             if (userid === props.displayName.userid) {
                 return;
@@ -17,15 +18,15 @@ const PreConnectionRoom: FC<PreConnectionRoomProps> = (props: PreConnectionRoomP
             return (
                 <div key={i}>
                     <div
-                        className="room-receipient-circle-icon"
+                        className="room-preconnection-receipient-circle-icon"
                         style={{
                             backgroundColor: props.currentRoom.invited[userid].displayName.color,
                         }}
                     />
-                    <p className="room-receipient-username">
+                    <p className="room-preconnection-receipient-username">
                         {props.currentRoom.invited[userid].displayName.displayName}
                     </p>
-                    <p className="room-connection-msg">Drag file or send message to begin file transfer</p>
+                    <p className="room-preconnection-connection-msg">Drag file or send message to begin file transfer</p>
                 </div>
             );
         })}

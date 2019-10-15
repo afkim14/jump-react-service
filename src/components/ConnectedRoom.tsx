@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 
 import { Room, UserDisplay } from '../constants/Types';
+import './ConnectedRoom.css';
 
 type ConnectedRoomProps = {
     currentRoom: Room;

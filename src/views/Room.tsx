@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './Room.css';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
@@ -27,7 +26,7 @@ class Room extends Component<RoomProps, RoomState> {
 
     render(): React.ReactNode {
         return (
-            <div className="room-container standard-container-padding">
+            <div className="standard-container-padding">
                 {!this.props.currentRoom.requestSent ? (
                     <PreConnectionRoom currentRoom={this.props.currentRoom} displayName={this.props.displayName} />
                 ) : (
