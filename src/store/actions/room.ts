@@ -1,5 +1,5 @@
 import { Room } from '../../constants/Types';
-import { ADD_ROOM, REMOVE_ROOM } from '../types';
+import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM } from '../types';
 
 export interface AddRoom {
     type: ADD_ROOM;
@@ -11,7 +11,13 @@ export interface RemoveRoom {
     payload: string;
 }
 
-export type RoomAction = AddRoom | RemoveRoom;
+export interface UpdateRoom {
+    type: UPDATE_ROOM;
+    payload: string;
+    data: Room;
+}
+
+export type RoomAction = AddRoom | RemoveRoom | UpdateRoom;
 
 export function addRoom(room: Room): AddRoom {
     return {
@@ -25,4 +31,12 @@ export function removeRoom(roomid: string): RemoveRoom {
         type: REMOVE_ROOM,
         payload: roomid,
     };
+}
+
+export function updateRoom(roomid: string, room: Room): UpdateRoom {
+    return {
+        type: UPDATE_ROOM,
+        payload: roomid,
+        data: room
+    }
 }

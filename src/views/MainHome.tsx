@@ -12,10 +12,12 @@ type MainHomeProps = {
     user: Types.UserDisplay;
     setUser: (user: Types.UserDisplay) => void;
     rooms: Types.ConnectedRoomMap;
+    addRoom: (room: Types.Room) => void;
+    removeRoom: (roomid: string) => void;
+    updateRoom: (roomid: string, room: Types.Room) => void;
 };
 
 type MainHomeState = {
-    rooms: Types.ConnectedRoomMap;
     currentRoom: Types.Room;
     users: Types.UserDisplayMap;
     searchResults: Types.UserDisplay[];
@@ -48,7 +50,6 @@ const emptyRoomInvite = {
 
 export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     state: MainHomeState = {
-        rooms: {},
         currentRoom: emptyCurrentRoom,
         users: {},
         searchResults: [],
@@ -73,11 +74,10 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
-            const newRooms = this.state.rooms;
             const updatedRoom = this.state.currentRoom;
             updatedRoom.roomid = roomInfo.roomid;
-            newRooms[updatedRoom.roomid] = updatedRoom;
-            this.setState({ rooms: newRooms, currentRoom: updatedRoom });
+            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+            this.setState({ currentRoom: updatedRoom });
         });
 
         socket.on(Constants.SEND_ROOM_INVITES, (invite: Types.RoomInvite) => {
@@ -85,15 +85,15 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         socket.on(Constants.REJECT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
-            const newRooms = this.state.rooms;
-            newRooms[data.roomid].invited[data.respondedBy.userid].accepted = false;
-            this.setState({ rooms: newRooms });
+            const updatedRoom = this.props.rooms[data.roomid];
+            updatedRoom.invited[data.respondedBy.userid].accepted = false;
+            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
         });
 
         socket.on(Constants.ACCEPT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
-            const newRooms = this.state.rooms;
-            newRooms[data.roomid].invited[data.respondedBy.userid].accepted = true;
-            this.setState({ rooms: newRooms });
+            const updatedRoom = this.props.rooms[data.roomid];
+            updatedRoom.invited[data.respondedBy.userid].accepted = true;
+            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
         });
     }
 
@@ -121,10 +121,10 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         }
 
         // If already an open room, just open it up
-        const roomsIds = Object.keys(this.state.rooms);
+        const roomsIds = Object.keys(this.props.rooms);
         for (let i = 0; i < roomsIds.length; i++) {
-            if (this.state.rooms[roomsIds[i]].invited[displayName.userid]) {
-                this.setState({ currentRoom: this.state.rooms[roomsIds[i]] });
+            if (this.props.rooms[roomsIds[i]].invited[displayName.userid]) {
+                this.setState({ currentRoom: this.props.rooms[roomsIds[i]] });
                 return;
             }
         }
@@ -153,9 +153,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         this.setState({ currentRoom: newRoom });
 
         // Remove any rooms that were open but nothing was sent
-        Object.keys(this.state.rooms).forEach(roomid => {
-            if (!this.state.rooms[roomid].requestSent) {
-                delete this.state.rooms[roomid];
+        Object.keys(this.props.rooms).forEach(roomid => {
+            if (!this.props.rooms[roomid].requestSent) {
+                delete this.props.rooms[roomid];
             }
         });
     };
@@ -200,7 +200,6 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             roomid: this.state.roomInvite.roomid,
         });
 
-        const newRooms = this.state.rooms;
         const newCurrentRoom = {
             roomid: this.state.roomInvite.roomid,
             owner: this.state.roomInvite.sender.displayName,
@@ -219,10 +218,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             files: this.state.roomInvite.initialFile ? [this.state.roomInvite.initialFile] : [],
             rtcConnection: null,
         };
-        newRooms[newCurrentRoom.roomid] = newCurrentRoom;
 
+        this.props.addRoom(newCurrentRoom);
         this.setState({
-            rooms: newRooms,
             currentRoom: newCurrentRoom,
             roomInvite: emptyRoomInvite,
         });
@@ -244,22 +242,22 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Saves room messages locally
      */
     addRoomMessage = (roomid: string, msg: Types.Message): void => {
-        const newRooms = this.state.rooms;
-        newRooms[roomid].messages.push(msg);
-        this.setState({ rooms: newRooms });
+        const updatedRoom = this.props.rooms[roomid];
+        updatedRoom.messages.push(msg);
+        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
     };
 
     /**
      * Changes file status
      */
     updateCompletedFile = (roomid: string, file: Types.File): void => {
-        const newRooms = this.state.rooms;
-        newRooms[roomid].files.forEach(f => {
+        const updatedRoom = this.props.rooms[roomid];
+        updatedRoom.files.forEach(f => {
             if (f.fileName === file.fileName) {
                 f.completed = true;
             }
         });
-        this.setState({ rooms: newRooms });
+        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
     };
 
     render(): React.ReactNode {
@@ -277,7 +275,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     updateSearchResults={this.updateSearchResults}
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
-                    rooms={this.state.rooms}
+                    rooms={this.props.rooms}
                     currentRoom={this.state.currentRoom}
                 />
                 {this.state.currentRoom.roomid !== '' ? (

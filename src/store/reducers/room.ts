@@ -1,6 +1,6 @@
 import { ConnectedRoomMap } from '../../constants/Types';
 import { RoomAction } from '../actions/room';
-import { ADD_ROOM, REMOVE_ROOM } from '../types';
+import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM } from '../types';
 
 const initialState: ConnectedRoomMap = {};
 
@@ -15,6 +15,10 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             const roomIdToRemove = action.payload;
             const { [roomIdToRemove]: roomToRemove, ...roomsToKeep } = state;
             return roomsToKeep;
+        case UPDATE_ROOM:
+            const roomIdToUpdate = action.payload;
+            state[roomIdToUpdate] = action.data;
+            return state;
         default:
             return state;
     }

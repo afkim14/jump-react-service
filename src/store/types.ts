@@ -18,3 +18,6 @@ export type ADD_ROOM = typeof ADD_ROOM;
 
 export const REMOVE_ROOM = 'REMOVE_ROOM';
 export type REMOVE_ROOM = typeof REMOVE_ROOM;
+
+export const UPDATE_ROOM = 'UPDATE_ROOM';
+export type UPDATE_ROOM = typeof UPDATE_ROOM;
