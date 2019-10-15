@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 
 import { Message } from '../constants/Types';
+import './MessageContainer.css';
 
 type MessageProps = {
     key: number;
@@ -10,10 +11,10 @@ type MessageProps = {
 const MessageContainer: FC<MessageProps> = (props: MessageProps) => (
     <div key={props.key} className="message-container">
         <span>
-            <p className="messages-sender" style={{ color: props.message.sender.color }}>
+            <p className="message-sender" style={{ color: props.message.sender.color }}>
                 {props.message.sender.displayName}
             </p>
-            <p className="messages-text">{props.message.text}</p>
+            <p className="message-text">{props.message.text}</p>
         </span>
     </div>
 );

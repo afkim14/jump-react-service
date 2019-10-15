@@ -44,7 +44,6 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
         socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
             if (data.full) {
-                // TODO: UNCOMMENT THIS OUT WHEN WE HAVE NEW RTC (SEPARATE FROM FILE TRANSFER ONE)
                 this.rtc.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
                 this.rtc.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
                 this.rtc.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
@@ -73,7 +72,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      * Custom handler for receive change on send channel. Needed to re-render component.
      */
     handleReceiveChannelStatusChange(open: boolean): void {
-        console.log('handle receive channel statu change ', open);
+        console.log('handle receive channel status change ', open);
         this.setState({ receiveChannelOpen: open });
     }
 
@@ -130,10 +129,10 @@ class Messaging extends Component<MessagingProps, MessagingState> {
         const openConnection =
             !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
         return (
-            <div className="message">
-                <div className="message-input">
-                    {this.state.messages.length > 0 && <div className="messages-inbox">{messages}</div>}
-                    <div className="messages-container">
+            <div className="messaging">
+                <div className="messaging-input">
+                    {this.state.messages.length > 0 && <div className="messaging-inbox">{messages}</div>}
+                    <div className="messaging-container">
                         {openConnection ? (
                             <form onSubmit={this.handleMessageInputSubmit}>
                                 <CustomTextInput
@@ -155,7 +154,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
                                 />
                             </form>
                         ) : (
-                            <p className="messages-connecting-msg">Connecting ... please wait.</p>
+                            <p className="messaging-connecting-msg">Connecting ... please wait.</p>
                         )}
                     </div>
                 </div>
