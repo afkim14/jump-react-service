@@ -12,7 +12,7 @@ type LeftTabBarProps = {
     updateSearchResults: (search: string) => void;
     searchResults: Array<Types.UserDisplay>;
     rooms: Types.ConnectedRoomMap;
-    currentRoom: Types.Room;
+    currentRoomId: string;
 };
 
 type LeftTabBarState = {
@@ -68,7 +68,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                             }}
                             requestSent={this.props.rooms[roomid].requestSent}
                             accepted={this.checkRoomAccepted(this.props.rooms[roomid])}
-                            currentRoom={this.props.currentRoom.roomid === roomid}
+                            currentRoom={this.props.currentRoomId === roomid}
                         />
                     );
                 })}

@@ -11,19 +11,27 @@ class RTC {
     receiveChannel: RTCDataChannel | null;
     customSendChannelStatusHandler: any;
     customReceiveChannelStatusHandler: any;
-    customReceiveMessageHandler: any;
+    customReceiveDataHandler: any;
     attemptReconnectInterval: any;
+    numReconnectRetries: number;
+    roomid: string;
 
-    constructor() {
+    constructor(roomid: string) {
         this.localConnection = new RTCPeerConnection();
         this.sendChannel = null;
         this.receiveChannel = null;
         this.customSendChannelStatusHandler = null;
         this.customReceiveChannelStatusHandler = null;
-        this.customReceiveMessageHandler = null;
+        this.customReceiveDataHandler = null;
         this.attemptReconnectInterval = null;
+        this.numReconnectRetries = 5;
+        this.roomid = roomid;
 
         socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
+            if (data.roomid !== this.roomid) {
+                return;
+            }
+
             this.localConnection
                 .setRemoteDescription(data.sdp)
                 .then(() => {
@@ -34,6 +42,7 @@ class RTC {
                             this.localConnection.setLocalDescription(answer);
                             socket.emit(Constants.RTC_DESCRIPTION_ANSWER, {
                                 sdp: this.localConnection.localDescription,
+                                roomid: this.roomid
                             });
                         })
                         .catch(this.handleCreateAnswerError);
@@ -42,6 +51,10 @@ class RTC {
         });
 
         socket.on(Constants.RTC_DESCRIPTION_ANSWER, (data: Types.SDP) => {
+            if (data.roomid !== this.roomid) {
+                return;
+            }
+
             this.localConnection
                 .setRemoteDescription(data.sdp)
                 .then(() => {
@@ -50,8 +63,12 @@ class RTC {
                 .catch(this.handleSetDescriptionError);
         });
 
-        socket.on(Constants.ICE_CANDIDATE, (data: RTCIceCandidate) => {
-            this.localConnection.addIceCandidate(data).catch(this.handleAddCandidateError);
+        socket.on(Constants.ICE_CANDIDATE, (data: Types.IceCandidate) => {
+            if (data.roomid !== this.roomid) {
+                return;
+            }
+            
+            this.localConnection.addIceCandidate(data.candidate).catch(this.handleAddCandidateError);
         });
     }
 
@@ -75,21 +92,22 @@ class RTC {
                     console.log('Sender SDP sent.');
                     socket.emit(Constants.RTC_DESCRIPTION_OFFER, {
                         sdp: this.localConnection.localDescription,
+                        roomid: this.roomid
                     });
                 })
                 .catch(this.handleCreateDescriptionError);
         }
 
-        // setTimeout(() => {
-        //     if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
-        //         console.log('Attempting to reconnect');
-        //         this.attemptReconnectInterval = setInterval(() => {
-        //             this.disconnect();
-        //             this.connectPeers(channel, initiator);
-        //             this.numReconnectRetries -= 1;
-        //         }, RETRY_INTERVAL_MS, this.numReconnectRetries);
-        //     }
-        // }, TIMEOUT_MS);
+        setTimeout(() => {
+            if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
+                console.log('Attempting to reconnect');
+                this.attemptReconnectInterval = setInterval(() => {
+                    this.disconnect();
+                    this.connectPeers(channel, initiator);
+                    this.numReconnectRetries -= 1;
+                }, RETRY_INTERVAL_MS, this.numReconnectRetries);
+            }
+        }, TIMEOUT_MS);
     };
 
     /**
@@ -144,8 +162,8 @@ class RTC {
      */
     handleReceiveChannelStatusChange = (): void => {
         if (this.receiveChannel) {
-            const open = this.receiveChannel.readyState;
-            console.log(`Receive channel status: ${open}`);
+            const open = this.receiveChannel.readyState === 'open';
+            console.log(`Receive channel open status: ${open}`);
 
             if (this.fullyConnected()) {
                 clearInterval(this.attemptReconnectInterval);
@@ -162,7 +180,10 @@ class RTC {
      */
     handleOnICECandidate = (e: RTCPeerConnectionIceEvent): void => {
         if (e.candidate) {
-            socket.emit(Constants.ICE_CANDIDATE, e.candidate);
+            socket.emit(Constants.ICE_CANDIDATE, {
+                candidate: e.candidate,
+                roomid: this.roomid
+            });
         }
     };
 
@@ -201,16 +222,16 @@ class RTC {
         this.receiveChannel = event.channel;
         this.receiveChannel.onopen = this.handleReceiveChannelStatusChange;
         this.receiveChannel.onclose = this.handleReceiveChannelStatusChange;
-        this.receiveChannel.onmessage = this.onReceiveMessageCallback;
+        this.receiveChannel.onmessage = this.onReceiveDataCallback;
     };
 
     /**
      * Callback for when data is received. Calls custom handler if there is one.
      */
-    onReceiveMessageCallback = (event: MessageEvent): void => {
+    onReceiveDataCallback = (event: MessageEvent): void => {
         console.log(`Received message from receive channel: ${event}`);
-        if (this.customReceiveMessageHandler) {
-            this.customReceiveMessageHandler(event);
+        if (this.customReceiveDataHandler) {
+            this.customReceiveDataHandler(event);
         }
     };
 
@@ -231,8 +252,8 @@ class RTC {
     /**
      * Sets custom handler for on message received.
      */
-    setReceiveMessageHandler = (handler: any): void => {
-        this.customReceiveMessageHandler = handler;
+    setReceiveDataHandler = (handler: any): void => {
+        this.customReceiveDataHandler = handler;
     };
 
     /**

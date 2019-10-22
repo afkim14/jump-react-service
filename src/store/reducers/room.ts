@@ -17,8 +17,9 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             return roomsToKeep;
         case UPDATE_ROOM:
             const roomIdToUpdate = action.payload;
-            state[roomIdToUpdate] = action.data;
-            return state;
+            return Object.assign({}, state, {
+                [roomIdToUpdate]: action.data
+            });
         default:
             return state;
     }

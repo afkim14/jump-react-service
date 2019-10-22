@@ -15,10 +15,14 @@ export type ConnectedRoomMap = { [userid: string]: Room };
 export type ConnectedUserMap = { [userid: string]: { accepted: boolean; displayName: UserDisplay } };
 
 export type Room = {
+    // Both in frontend and backend
     roomid: string;
     owner: string;
     requestSent: boolean;
     invited: ConnectedUserMap;
+
+    // Only in frontend
+    full: boolean;
     messages: Array<Message>;
     files: Array<any>;
     rtcConnection: RTC | null;
@@ -27,8 +31,6 @@ export type Room = {
 export type RoomInvite = {
     sender: UserDisplay;
     roomid: string;
-    initialMessage: Message;
-    initialFile: File;
 };
 
 export type RoomInviteResponse = {
@@ -38,8 +40,12 @@ export type RoomInviteResponse = {
 };
 
 export type RoomStatus = {
+    type: string;
+    roomid: string;
+    invited: ConnectedUserMap;
     full: boolean;
     owner: string;
+    userid: string;
 };
 
 export type Message = {
@@ -48,13 +54,23 @@ export type Message = {
 };
 
 export type File = {
+    id: string;
     sender: UserDisplay;
-    fileName: string;
-    fileSize: number;
+    name: string;
+    size: number;
+    anchorDownloadHref: string;
+    anchorDownloadFileName: string;
+    accepted: boolean;
     completed: boolean;
 };
 
 // RTC STUFF
 export type SDP = {
     sdp: RTCSessionDescription;
+    roomid: string;
 };
+
+export type IceCandidate = {
+    candidate: RTCIceCandidate;
+    roomid: string;
+}

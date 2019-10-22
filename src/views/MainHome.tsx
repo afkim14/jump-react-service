@@ -7,6 +7,9 @@ import LeftTabBar from '../components/LeftTabBar';
 import TransferRequest from '../components/TransferRequest';
 import Room from './Room';
 import MainWelcome from '../components/MainWelcome';
+import RoomAwaiting from '../components/RoomAwaiting';
+import RoomConnect from '../components/RoomConnect';
+import RTC from '../services/RTC';
 
 type MainHomeProps = {
     user: Types.UserDisplay;
@@ -18,39 +21,22 @@ type MainHomeProps = {
 };
 
 type MainHomeState = {
-    currentRoom: Types.Room;
+    creatingRoom: null | Types.Room;
+    currentRoomId: string;
     users: Types.UserDisplayMap;
     searchResults: Types.UserDisplay[];
     roomInvite: Types.RoomInvite;
 };
 
-const emptyCurrentRoom = {
-    owner: '',
-    requestSent: false,
-    invited: {},
-    roomid: '',
-    messages: [],
-    files: [],
-    rtcConnection: null,
-};
 const emptyRoomInvite = {
     sender: { userid: '', displayName: '', color: '' },
     roomid: '',
-    initialMessage: {
-        sender: { userid: '', displayName: '', color: '' },
-        text: '',
-    },
-    initialFile: {
-        sender: { userid: '', displayName: '', color: '' },
-        fileName: '',
-        fileSize: 0,
-        completed: false,
-    },
 };
 
 export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     state: MainHomeState = {
-        currentRoom: emptyCurrentRoom,
+        creatingRoom: null,
+        currentRoomId: '',
         users: {},
         searchResults: [],
         roomInvite: emptyRoomInvite,
@@ -58,8 +44,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
     componentDidMount(): void {
         // Get random username and a list of connected users
-        socket.emit(Constants.GET_DISPLAY_NAME);
-        socket.emit(Constants.GET_USERS);
+        socket.emit(Constants.LOGIN);
 
         socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
             this.props.setUser(displayName);
@@ -74,26 +59,68 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
-            const updatedRoom = this.state.currentRoom;
-            updatedRoom.roomid = roomInfo.roomid;
-            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-            this.setState({ currentRoom: updatedRoom });
+            // Update with roomid given by server and open room
+            if (this.state.creatingRoom) {
+                const updatedRoom = this.state.creatingRoom;
+                updatedRoom.roomid = roomInfo.roomid;
+                updatedRoom.rtcConnection = new RTC(roomInfo.roomid);
+                this.props.addRoom(updatedRoom);
+                this.setState({ creatingRoom: null, currentRoomId: updatedRoom.roomid });
+            }
         });
 
         socket.on(Constants.SEND_ROOM_INVITES, (invite: Types.RoomInvite) => {
             this.setState({ roomInvite: invite });
         });
 
-        socket.on(Constants.REJECT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
+        socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
             const updatedRoom = this.props.rooms[data.roomid];
-            updatedRoom.invited[data.respondedBy.userid].accepted = false;
-            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+            if (updatedRoom) {
+                // Users connected to the room already
+                updatedRoom.invited[data.userid].accepted = data.type === Constants.USER_CONNECT;
+                updatedRoom.full = data.full;
+                this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+            } else {
+                // New users who just accepted a room invite
+                const newCurrentRoom = {
+                    roomid: data.roomid,
+                    owner: data.owner,
+                    requestSent: true,
+                    invited: data.invited,
+                    full: data.full,
+                    messages: [],
+                    files: [],
+                    rtcConnection: new RTC(data.roomid),
+                };
+        
+                this.props.addRoom(newCurrentRoom);
+                this.setState({
+                    currentRoomId: newCurrentRoom.roomid,
+                    roomInvite: emptyRoomInvite,
+                });
+            }
         });
 
-        socket.on(Constants.ACCEPT_TRANSFER_REQUEST, (data: Types.RoomInviteResponse) => {
+        // TODO: MAYBE PUT THIS IN FILE TRANSFER
+        socket.on(Constants.FILE_ACCEPT, (data: { roomid: string, fileid: string }) => {
             const updatedRoom = this.props.rooms[data.roomid];
-            updatedRoom.invited[data.respondedBy.userid].accepted = true;
-            this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+            updatedRoom.files.forEach(f => {
+                if (f.id === data.fileid) {    
+                    f.accepted = true;
+                    this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                }
+            });
+        });
+    
+        // TODO: MAYBE PUT THIS IN FILE TRANSFER
+        socket.on(Constants.FILE_REJECT, (data: { roomid: string, fileid: string }) => {
+            const updatedRoom = this.props.rooms[data.roomid];
+            updatedRoom.files.forEach(f => {
+                if (f.id === data.fileid) {    
+                    f.accepted = false;
+                    this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                }
+            });
         });
     }
 
@@ -124,7 +151,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         const roomsIds = Object.keys(this.props.rooms);
         for (let i = 0; i < roomsIds.length; i++) {
             if (this.props.rooms[roomsIds[i]].invited[displayName.userid]) {
-                this.setState({ currentRoom: this.props.rooms[roomsIds[i]] });
+                this.setState({ currentRoomId: roomsIds[i] });
                 return;
             }
         }
@@ -144,85 +171,42 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     displayName: displayName,
                 },
             },
+            full: false,
             messages: [],
             files: [],
             rtcConnection: null,
         };
 
         socket.emit(Constants.CREATE_ROOM, { invited: newRoom.invited });
-        this.setState({ currentRoom: newRoom });
+        this.setState({ creatingRoom: newRoom });
 
-        // Remove any rooms that were open but nothing was sent
+        // Remove any rooms that were open but request wasn't sent
         Object.keys(this.props.rooms).forEach(roomid => {
             if (!this.props.rooms[roomid].requestSent) {
+                // TODO: properly close RTC connection
                 delete this.props.rooms[roomid];
             }
         });
     };
 
     /**
-     * Callback on initial message send. Sends invites to everyone in room except sender
+     * Sends room invites to invited users in the room.
      */
-    onInitialMessageSend = (msg: Types.Message): void => {
-        const newCurrentRoom = this.state.currentRoom;
-        newCurrentRoom.requestSent = true;
-        newCurrentRoom.messages.push(msg);
-        socket.emit(Constants.SEND_ROOM_INVITES, {
-            invited: newCurrentRoom.invited,
-            roomid: this.state.currentRoom.roomid,
-            initialMessage: newCurrentRoom.messages[0],
-        });
-        this.setState({ currentRoom: newCurrentRoom });
-    };
+    sendRequests = (): void => {
+        const updatedRoom = this.props.rooms[this.state.currentRoomId];
+        updatedRoom.requestSent = true;
+        socket.emit(Constants.SEND_ROOM_INVITES, { roomid: updatedRoom.roomid });
+        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+    }
 
     /**
-     * Callback on initial file send. Sends invites to everyone in room except sender
-     */
-    onInitialFileSend = (file: Types.File): void => {
-        const newCurrentRoom = this.state.currentRoom;
-        newCurrentRoom.requestSent = true;
-        newCurrentRoom.files.push(file);
-        socket.emit(Constants.SEND_ROOM_INVITES, {
-            invited: newCurrentRoom.invited,
-            roomid: this.state.currentRoom.roomid,
-            initialFile: newCurrentRoom.files[0],
-        });
-        this.setState({ currentRoom: newCurrentRoom });
-    };
-
-    /**
-     * Accepts incoming transfer request and goes inside room.
+     * Accepts incoming transfer request
      */
     acceptRequest = (): void => {
         socket.emit(Constants.ACCEPT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
             respondedBy: this.props.user,
             roomid: this.state.roomInvite.roomid,
-        });
-
-        const newCurrentRoom = {
-            roomid: this.state.roomInvite.roomid,
-            owner: this.state.roomInvite.sender.displayName,
-            requestSent: true,
-            invited: {
-                [this.state.roomInvite.sender.userid]: {
-                    accepted: true,
-                    displayName: this.state.roomInvite.sender,
-                },
-                [this.props.user.userid]: {
-                    accepted: true,
-                    displayName: this.props.user,
-                },
-            },
-            messages: this.state.roomInvite.initialMessage ? [this.state.roomInvite.initialMessage] : [],
-            files: this.state.roomInvite.initialFile ? [this.state.roomInvite.initialFile] : [],
-            rtcConnection: null,
-        };
-
-        this.props.addRoom(newCurrentRoom);
-        this.setState({
-            currentRoom: newCurrentRoom,
-            roomInvite: emptyRoomInvite,
         });
     };
 
@@ -238,29 +222,28 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         this.setState({ roomInvite: emptyRoomInvite });
     };
 
-    /**
-     * Saves room messages locally
-     */
-    addRoomMessage = (roomid: string, msg: Types.Message): void => {
-        const updatedRoom = this.props.rooms[roomid];
-        updatedRoom.messages.push(msg);
-        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-    };
-
-    /**
-     * Changes file status
-     */
-    updateCompletedFile = (roomid: string, file: Types.File): void => {
-        const updatedRoom = this.props.rooms[roomid];
-        updatedRoom.files.forEach(f => {
-            if (f.fileName === file.fileName) {
-                f.completed = true;
-            }
-        });
-        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-    };
-
     render(): React.ReactNode {
+        let RoomComponent = <div></div>;
+        const currentRoom = this.props.rooms[this.state.currentRoomId];
+        if (!currentRoom) {
+            RoomComponent = <MainWelcome userDisplay={this.props.user} />;
+        } else {
+            if (!currentRoom.requestSent) {
+                RoomComponent = <RoomConnect sendRequests={this.sendRequests} />
+            } else {
+                if (currentRoom.full) {
+                    RoomComponent =
+                        <Room
+                            currentRoom={currentRoom}
+                            displayName={this.props.user}
+                            updateRoom={this.props.updateRoom}
+                        />
+                } else {
+                    RoomComponent = <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />
+                }
+            }
+        }
+
         return (
             <div>
                 <TransferRequest
@@ -276,20 +259,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
                     rooms={this.props.rooms}
-                    currentRoom={this.state.currentRoom}
+                    currentRoomId={this.state.currentRoomId}
                 />
-                {this.state.currentRoom.roomid !== '' ? (
-                    <Room
-                        currentRoom={this.state.currentRoom}
-                        displayName={this.props.user}
-                        onInitialMessageSend={this.onInitialMessageSend}
-                        onInitialFileSend={this.onInitialFileSend}
-                        addRoomMessage={this.addRoomMessage}
-                        updateCompletedFile={this.updateCompletedFile}
-                    />
-                ) : (
-                    <MainWelcome userDisplay={this.props.user} />
-                )}
+                {RoomComponent}
             </div>
         );
     }

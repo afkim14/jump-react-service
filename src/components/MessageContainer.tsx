@@ -9,7 +9,7 @@ type MessageProps = {
 };
 
 const MessageContainer: FC<MessageProps> = (props: MessageProps) => (
-    <div key={props.key} className="message-container">
+    <div className="message-container">
         <span>
             <p className="message-sender" style={{ color: props.message.sender.color }}>
                 {props.message.sender.displayName}

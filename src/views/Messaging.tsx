@@ -1,79 +1,36 @@
 import React, { Component } from 'react';
 import { UserDisplay } from '../constants/Types';
-import RTC from '../services/RTC';
-import Constants from '../constants/Constants';
 import CustomTextInput from '../components/CustomTextInput';
 import * as Types from '../constants/Types';
 import './Messaging.css';
-import socket from '../constants/socket-context';
 import MessageContainer from '../components/MessageContainer';
 
 type MessagingProps = {
     currentRoom: Types.Room;
-    onInitialMessageSend: Function;
     displayName: Types.UserDisplay;
-    addRoomMessage: Function;
+    channelsOpen: boolean;
+    setReceiveMessageHandler: (handler: any) => void;
+    updateRoom: (roomid: string, room: Types.Room) => void;
 };
 
 type MessagingState = {
-    sendChannelOpen: boolean;
-    receiveChannelOpen: boolean;
     messageInputText: string;
-    messages: Array<Types.Message>;
 };
 
 class Messaging extends Component<MessagingProps, MessagingState> {
     state: MessagingState = {
-        sendChannelOpen: false,
-        receiveChannelOpen: false,
         messageInputText: '',
-        messages: this.props.currentRoom.messages,
     };
-    rtc: RTC;
 
     constructor(props: MessagingProps) {
         super(props);
-        this.handleSendChannelStatusChange = this.handleSendChannelStatusChange.bind(this);
-        this.handleReceiveChannelStatusChange = this.handleReceiveChannelStatusChange.bind(this);
         this.handleSendMessage = this.handleSendMessage.bind(this);
         this.handleReceiveMessage = this.handleReceiveMessage.bind(this);
         this.handleMessageInputChange = this.handleMessageInputChange.bind(this);
         this.handleMessageInputSubmit = this.handleMessageInputSubmit.bind(this);
         this.addMessage = this.addMessage.bind(this);
-        this.rtc = new RTC();
 
-        socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
-            if (data.full) {
-                this.rtc.connectPeers('messageDataChannel', this.props.displayName.userid === data.owner);
-                this.rtc.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-                this.rtc.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-                this.rtc.setReceiveMessageHandler(this.handleReceiveMessage);
-            }
-        });
-    }
-
-    /**
-     * Disconnect from RTC channels. The cool thing here is that if ANY user in the room leaves,
-     * all other users will re-render their components and since room is not full, they will also be disconnected.
-     */
-    componentWillUnmount(): void {
-        this.rtc.disconnect();
-    }
-
-    /**
-     * Custom handler for status change on send channel. Needed to re-render component.
-     */
-    handleSendChannelStatusChange(open: boolean): void {
-        console.log('handle send channel status change ', open);
-        this.setState({ sendChannelOpen: open });
-    }
-
-    /**
-     * Custom handler for receive change on send channel. Needed to re-render component.
-     */
-    handleReceiveChannelStatusChange(open: boolean): void {
-        console.log('handle receive channel status change ', open);
-        this.setState({ receiveChannelOpen: open });
+        this.props.setReceiveMessageHandler(this.handleReceiveMessage);
     }
 
     /**
@@ -81,14 +38,19 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      */
     handleSendMessage(msg: Types.Message): void {
         this.setState({ messageInputText: '' });
-        if (!this.props.currentRoom.requestSent) {
-            this.props.onInitialMessageSend(msg);
-            return;
-        }
-
-        if (this.rtc.sendMessage(JSON.stringify(msg))) {
+        if (this.props.currentRoom.rtcConnection && 
+            this.props.currentRoom.rtcConnection.sendMessage(JSON.stringify(msg))) {
             this.addMessage(msg);
         }
+    }
+
+    /*
+     * Adds message to display in UI
+     */
+    addMessage = (msg: Types.Message): void => {
+        const updatedRoom = this.props.currentRoom;
+        updatedRoom.messages.push(msg);
+        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
     }
 
     /**
@@ -96,13 +58,6 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      */
     handleReceiveMessage(event: MessageEvent): void {
         this.addMessage(JSON.parse(event.data));
-    }
-
-    /**
-     * Adds message to display in UI
-     */
-    addMessage(msg: Types.Message): void {
-        this.props.addRoomMessage(this.props.currentRoom.roomid, msg);
     }
 
     /**
@@ -125,13 +80,13 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
     render(): React.ReactNode {
         const messages =
-            this.state.messages && this.state.messages.map((msg, idx) => <MessageContainer key={idx} message={msg} />);
+            this.props.currentRoom.messages && this.props.currentRoom.messages.map((msg, idx) => <MessageContainer key={idx} message={msg} />);
         const openConnection =
-            !this.props.currentRoom.requestSent || (this.state.receiveChannelOpen && this.state.sendChannelOpen);
+            !this.props.currentRoom.requestSent || this.props.channelsOpen;
         return (
             <div className="messaging">
                 <div className="messaging-input">
-                    {this.state.messages.length > 0 && <div className="messaging-inbox">{messages}</div>}
+                    {this.props.currentRoom.messages.length > 0 && <div className="messaging-inbox">{messages}</div>}
                     <div className="messaging-container">
                         {openConnection ? (
                             <form onSubmit={this.handleMessageInputSubmit}>
