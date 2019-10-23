@@ -27,14 +27,14 @@ const MainWelcome: FC<MainWelcomeProps> = (props: MainWelcomeProps) => {
                 <div className="main-step-icon">
                     <p className="main-step-number">2</p>
                 </div>
-                <p className="main-step-inst">Send a message or a file request and wait for approval.</p>
+                <p className="main-step-inst">Connect and wait for approval.</p>
             </div>
             <div style={{ clear: 'both' }} />
             <div className="main-step-container">
                 <div className="main-step-icon">
                     <p className="main-step-number">3</p>
                 </div>
-                <p className="main-step-inst">Track the transfer process with detailed information.</p>
+                <p className="main-step-inst">Send messages and files back and forth.</p>
             </div>
         </div>
     );

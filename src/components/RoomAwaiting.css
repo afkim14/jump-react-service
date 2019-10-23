@@ -1,0 +1,43 @@
+.room-awaiting-container {
+    width: 500px;
+    height: 300px;
+    position: absolute;
+    left: calc(((100% - 300px) / 2) + 300px);
+    top: 50%;
+    margin: -150px 0 0 -250px;
+    text-align: center;
+}
+
+.room-awaiting-receipient-circle-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    margin: 0px auto;
+}
+
+.room-awaiting-receipient-username {
+    text-align: center;
+    font-weight: bold;
+}
+
+.room-awaiting-status {
+    text-align: center;
+}
+
+.room-awaiting-status-pulsing {
+    opacity: 1;
+    animation: pulse 3s infinite linear;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% { 
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}

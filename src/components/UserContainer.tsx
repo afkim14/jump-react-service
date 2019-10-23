@@ -1,48 +1,68 @@
-import React from 'react';
+import React, { Component } from 'react';
 import './UserContainer.css';
 import * as Types from '../constants/Types';
 
 type UserContainerProps = {
     displayName: Types.UserDisplay;
-    onClick: (displayName: Types.UserDisplay) => void;
+    onClick?: () => void;
+    onLeaveRoom?: () => void;
     requestSent?: boolean;
     accepted?: boolean;
     currentRoom?: boolean;
 };
 
-const UserContainer: React.FC<UserContainerProps> = ({
-    displayName,
-    onClick,
-    requestSent,
-    accepted,
-    currentRoom,
-}: UserContainerProps) => {
-    const currentRoomNoAction = !accepted && !requestSent && currentRoom;
-    let status = <p></p>;
-    if (accepted) {
-        status = <p className="user-display-status">Accepted</p>;
-    } else {
-        status = requestSent ? <p className="user-display-status">Pending</p> : <p></p>;
-    }
+type UserContainerState = {
+    hovered: boolean;
+}
 
-    return (
-        <div
-            className={`user-container ${currentRoom && 'user-container-current'} ${currentRoomNoAction &&
-                'user-container-initial'}`}
-            onMouseDown={(): void => {
-                onClick(displayName);
-            }}
-        >
+export default class UserContainer extends Component<UserContainerProps, UserContainerState> {
+    state: UserContainerState = {
+        hovered: false
+    };
+
+    render(): React.ReactNode {
+        const currentRoomNoAction = !this.props.accepted && !this.props.requestSent && this.props.currentRoom;
+        let status = <p></p>;
+        if (this.props.accepted) {
+            status = <p className="user-display-status">Accepted</p>;
+        } else {
+            status = this.props.requestSent ? <p className="user-display-status">Pending</p> : <p></p>;
+        }
+
+        return (
             <div
-                className={`user-display-icon ${currentRoomNoAction && 'user-display-light'}`}
-                style={{ backgroundColor: displayName.color }}
-            ></div>
-            <p className={`user-display-text ${currentRoomNoAction && 'user-display-light'}`}>
-                {displayName.displayName}
-            </p>
-            {status}
-        </div>
-    );
-};
-
-export default UserContainer;
+                className={`user-container ${this.props.currentRoom && 'user-container-current'} ${currentRoomNoAction &&
+                    'user-container-initial'}`}
+                onMouseDown={(): void => {
+                    this.props.onClick && this.props.onClick();
+                }}
+                onMouseEnter={(): void => {
+                    this.setState({ hovered: true });
+                }}
+                onMouseLeave={(): void => {
+                    this.setState({ hovered: false });
+                }}
+            >
+                <div
+                    className={`user-display-icon ${currentRoomNoAction && 'user-display-light'}`}
+                    style={{ backgroundColor: this.props.displayName.color }}
+                />
+                <p className={`user-display-text ${currentRoomNoAction && 'user-display-light'}`}>
+                    {this.props.displayName.displayName}
+                </p>
+                {
+                    this.state.hovered && this.props.onLeaveRoom ? (
+                        <div 
+                            className={'user-container-x-container'}
+                            onClick={(): void => { this.props.onLeaveRoom && this.props.onLeaveRoom(); }}
+                        >
+                            x
+                        </div>
+                    ) : (
+                        status
+                    )
+                }
+            </div>
+        )
+    }
+}

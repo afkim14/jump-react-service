@@ -9,6 +9,7 @@ type LeftTabBarProps = {
     displayName: Types.UserDisplay;
     users: Types.UserDisplayMap;
     selectUser: (displayName: Types.UserDisplay) => void;
+    leaveRoom: (roomid: string) => void;
     updateSearchResults: (search: string) => void;
     searchResults: Array<Types.UserDisplay>;
     rooms: Types.ConnectedRoomMap;
@@ -56,7 +57,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 <A href="/" className="left-tab-bar-logo-text">
                     JUMP
                 </A>
-                <UserContainer displayName={this.props.displayName} onClick={this.props.selectUser} />
+                <UserContainer displayName={this.props.displayName} />
                 <p className="left-tab-bar-header">Connections</p>
                 {Object.keys(this.props.rooms).map((roomid, i) => {
                     return (
@@ -65,6 +66,9 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                             displayName={this.getOtherUserInRoom(this.props.rooms[roomid])}
                             onClick={(): void => {
                                 this.props.selectUser(this.getOtherUserInRoom(this.props.rooms[roomid]));
+                            }}
+                            onLeaveRoom={(): void => {
+                                this.props.leaveRoom(roomid);
                             }}
                             requestSent={this.props.rooms[roomid].requestSent}
                             accepted={this.checkRoomAccepted(this.props.rooms[roomid])}
