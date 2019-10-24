@@ -1,0 +1,67 @@
+.file-container {
+    
+}
+
+.file-icon {
+    width: 80px;
+    height: 80px;
+    display: block;
+    margin: 0px auto;
+}
+
+.file-name {
+    text-align: center;
+    font-weight: bold;
+}
+
+.file-size {
+    text-align: center;
+}
+
+.file-download {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: #F4976C;
+    text-align: center;
+    line-height: 40px;
+
+    height: 40px;
+    width: 200px;
+    color: #ffffff;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    margin: 10px auto 10px auto;
+    display: block;
+
+    transition: border-radius 0.3s ease;
+    -webkit-transition: border-radius 0.3s ease;
+    -moz-transition: border-radius 0.3s ease;
+    -o-transition: border-radius 0.3s ease;
+}
+
+.file-download:hover {
+    border-radius: 75px;
+}
+
+.file-downloading {
+    position: relative;
+    z-index: 10;
+    cursor: default;
+    text-decoration: none;
+    background-color: #3e3e3e;
+    text-align: center;
+    line-height: 40px;
+
+    height: 40px;
+    width: 200px;
+    color: #ffffff;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    margin: 10px auto 10px auto;
+    display: block;
+}

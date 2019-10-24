@@ -11,8 +11,20 @@
     transition: box-shadow 0.3s ease;
 }
 
+.user-container-current {
+    background-color: #232E51;
+}
+
+.user-container-initial {
+    opacity: 0.5;
+}
+
 .user-container:hover {
-    box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 5px 5px 2px #232E51;
+}
+
+.user-display-light {
+    font-style: italic;
 }
 
 .user-display-icon {
@@ -28,4 +40,13 @@
     margin: 0px;
     margin-top: 4px;
     margin-left: 10px;
+    color: #FBFBF2;
+}
+
+.user-display-status {
+    float: right;
+    margin: 0px;
+    opacity: 0.5;
+    margin-top: 4px;
+    color: #FBFBF2;
 }
