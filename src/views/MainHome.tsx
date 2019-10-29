@@ -223,31 +223,26 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     };
 
     render(): React.ReactNode {
-        let RoomComponent = <div></div>;
         const currentRoom = this.props.rooms[this.state.currentRoomId];
-        if (!currentRoom) {
-            RoomComponent = <MainWelcome userDisplay={this.props.user} />;
-        } else {
-            if (!currentRoom.requestSent) {
-                RoomComponent = 
-                    <RoomConnect 
-                        currentRoom={currentRoom} 
-                        displayName={this.props.user} 
-                        sendRequests={this.sendRequests} 
-                    />
-            } else {
-                if (currentRoom.full) {
-                    RoomComponent =
-                        <Room
-                            currentRoom={currentRoom}
-                            displayName={this.props.user}
-                            updateRoom={this.props.updateRoom}
-                        />
-                } else {
-                    RoomComponent = <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />
-                }
-            }
-        }
+        const mainWelcomeHtml = <MainWelcome userDisplay={this.props.user} />;
+        const roomConnectHtml = <RoomConnect 
+            currentRoom={currentRoom} 
+            displayName={this.props.user} 
+            sendRequests={this.sendRequests} 
+        />;
+        const roomAwaitingHtml = currentRoom && <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />;
+        const roomConnectedHtml = <Room
+            currentRoom={currentRoom}
+            displayName={this.props.user}
+            updateRoom={this.props.updateRoom}
+        />;
+        const RoomComponent = currentRoom 
+            ? (currentRoom.requestSent 
+                ? (currentRoom.full 
+                    ? roomConnectedHtml 
+                    : roomAwaitingHtml) 
+                : roomConnectHtml) 
+            : mainWelcomeHtml;
 
         return (
             <div>

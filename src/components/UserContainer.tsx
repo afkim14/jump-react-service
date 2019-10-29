@@ -22,12 +22,9 @@ export default class UserContainer extends Component<UserContainerProps, UserCon
 
     render(): React.ReactNode {
         const currentRoomNoAction = !this.props.accepted && !this.props.requestSent && this.props.currentRoom;
-        let status = <p></p>;
-        if (this.props.accepted) {
-            status = <p className="user-display-status">Accepted</p>;
-        } else {
-            status = this.props.requestSent ? <p className="user-display-status">Pending</p> : <p></p>;
-        }
+        const acceptedStatusHtmlContent = <p className="user-display-status">Accepted</p>;
+        const pendingStatusHtmlContent = <p className="user-display-status">Pending</p>;
+        const status = this.props.accepted ? acceptedStatusHtmlContent : (this.props.requestSent && pendingStatusHtmlContent);
 
         return (
             <div
