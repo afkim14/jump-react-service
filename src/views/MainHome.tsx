@@ -101,6 +101,10 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             }
         });
 
+        socket.on(Constants.CLOSE_ROOM, (data: { roomid: string }) => {
+            this.props.removeRoom(data.roomid);
+        })
+
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
         socket.on(Constants.FILE_ACCEPT, (data: { roomid: string, fileid: string }) => {
             const updatedRoom = this.props.rooms[data.roomid];
