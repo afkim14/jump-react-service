@@ -1,6 +1,7 @@
-import React, { Component, ChangeEvent } from 'react';
+import React, { Component, ChangeEvent, Fragment } from 'react';
 import uuid from 'uuid';
 import FilesView from '../components/FilesView';
+import DragAndDropFile from '../components/DragAndDropFile';
 import * as Types from '../constants/Types';
 import './FileTransfer.css';
 import socket from '../constants/socket-context';
@@ -72,31 +73,11 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
         this.handleAbortFileTransfer = this.handleAbortFileTransfer.bind(this);
 
-        this.handleDrag = this.handleDrag.bind(this);
-        this.handleDragIn = this.handleDragIn.bind(this);
-        this.handleDragOut = this.handleDragOut.bind(this);
-        this.handleDrop = this.handleDrop.bind(this);
-
         this.getFilesSentAndReceived = this.getFilesSentAndReceived.bind(this);
-        this.submitFile = this.submitFile.bind(this);
         this.acceptFile = this.acceptFile.bind(this);
         this.rejectFile = this.rejectFile.bind(this);
 
         this.props.setReceiveFileHandler(this.handleReceiveData);
-    }
-
-    componentDidMount(): void {
-        this.dropRef.current.addEventListener('dragenter', this.handleDragIn);
-        this.dropRef.current.addEventListener('dragleave', this.handleDragOut);
-        this.dropRef.current.addEventListener('dragover', this.handleDrag);
-        this.dropRef.current.addEventListener('drop', this.handleDrop);
-    }
-
-    componentWillUnmount(): void {
-        this.dropRef.current.removeEventListener('dragenter', this.handleDragIn);
-        this.dropRef.current.removeEventListener('dragleave', this.handleDragOut);
-        this.dropRef.current.removeEventListener('dragover', this.handleDrag);
-        this.dropRef.current.removeEventListener('drop', this.handleDrop);
     }
 
     /**
@@ -153,7 +134,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
             const updatedRoom = this.props.currentRoom;
             updatedRoom.files.forEach(f => {
-                if (f.id === this.state.currentFile.id) {    
+                if (f.id === this.state.currentFile.id) {
                     f.completed = true;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
                 }
@@ -171,11 +152,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         }
     }
 
-    /**
-     * Handle file selection.
-     */
-    handleFileInputChange(event: ChangeEvent<HTMLInputElement>): void {
-        const file = event.target.files ? event.target.files[0] : null;
+    handleFileInputChange(file: File | null): void {
         if (file) {
             this.submitFile(file);
         }
@@ -230,58 +207,13 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     /**
-     * Handles file drag
-     */
-    handleDrag(e: React.DragEvent<HTMLDivElement>): void {
-        e.preventDefault();
-        e.stopPropagation();
-    };
-
-    /**
-     * Handles file drag in
-     */
-    handleDragIn(e: React.DragEvent<HTMLDivElement>): void {
-        e.preventDefault();
-        e.stopPropagation();
-        this.dragCounter++;
-        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-            this.setState({ dragging: true });
-        }
-    };
-
-    /**
-     * Handles file drag out
-     */
-    handleDragOut(e: React.DragEvent<HTMLDivElement>): void {
-        e.preventDefault();
-        e.stopPropagation();
-        this.dragCounter--;
-        if (this.dragCounter > 0) return;
-        this.setState({ dragging: false });
-    };
-
-    /**
-     * Handles file drop
-     */
-    handleDrop(e: React.DragEvent<HTMLDivElement>): void {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            this.submitFile(e.dataTransfer.files[0]);
-        }
-        this.setState({ dragging: false });
-    };
-
-    /**
      * Separate between files sent and files received
      */
-    getFilesSentAndReceived(): { sent: Types.File[], received: Types.File[]} {
+    getFilesSentAndReceived(): { sent: Types.File[]; received: Types.File[] } {
         const sent: Types.File[] = [];
         const received: Types.File[] = [];
         this.props.currentRoom.files.forEach(f => {
-            f.sender.userid === this.props.displayName.userid
-                ? sent.push(f)
-                : received.push(f);
+            f.sender.userid === this.props.displayName.userid ? sent.push(f) : received.push(f);
         });
         return { sent, received };
     }
@@ -300,7 +232,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             anchorDownloadFileName: '',
             accepted: false,
             completed: false,
-        }
+        };
 
         const updatedRoom = this.props.currentRoom;
         updatedRoom.files.push(newFile);
@@ -317,18 +249,18 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     acceptFile(file: Types.File): void {
         const updatedRoom = this.props.currentRoom;
         updatedRoom.files.forEach(f => {
-            if (f.id === file.id) {    
+            if (f.id === file.id) {
                 f.accepted = true;
                 this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-                socket.emit(Constants.FILE_ACCEPT, { 
-                    sender: file.sender, 
-                    roomid: updatedRoom.roomid, 
-                    fileid: file.id 
+                socket.emit(Constants.FILE_ACCEPT, {
+                    sender: file.sender,
+                    roomid: updatedRoom.roomid,
+                    fileid: file.id,
                 });
             }
         });
     }
-    
+
     /**
      * Reject file
      * @param file - file to reject
@@ -336,13 +268,13 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     rejectFile(file: Types.File): void {
         const updatedRoom = this.props.currentRoom;
         updatedRoom.files.forEach(f => {
-            if (f.id === file.id) {    
+            if (f.id === file.id) {
                 f.accepted = false;
                 this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-                socket.emit(Constants.FILE_REJECT, { 
-                    sender: file.sender, roomid: 
-                    updatedRoom.roomid, fileid: 
-                    file.id 
+                socket.emit(Constants.FILE_REJECT, {
+                    sender: file.sender,
+                    roomid: updatedRoom.roomid,
+                    fileid: file.id,
                 });
             }
         });
@@ -352,52 +284,32 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         const allFiles = this.getFilesSentAndReceived();
         const sentFiles = allFiles.sent;
         const receivedFiles = allFiles.received;
-        const openConnection =
-            !this.props.currentRoom.requestSent || (this.props.channelsOpen);
+        const openConnection = !this.props.currentRoom.requestSent || this.props.channelsOpen;
         return (
-            <div>
-                <div
-                    className={`file-transfer-container ${this.state.dragging && 'file-transfer-container-drag'}`}
-                    ref={this.dropRef}
-                >
-                    {
-                        this.state.dragging ? (
-                            <div>
-                                <p className="file-transfer-text">Drop file to send.</p>
-                            </div>
-                        ) : (
-                            <input
-                                type="file"
-                                className="file-input"
-                                onChange={this.handleFileInputChange}
-                                ref={ref => (this.fileInput = ref)}
-                            />
-                        )
-                    }
-                </div>
-                {
-                    this.props.currentRoom.requestSent && (
-                        <div>
-                            <p className="file-transfer-header">Sending</p>
-                            <FilesView 
-                                files={sentFiles}
-                                channelsOpen={this.props.channelsOpen}
-                                displayName={this.props.displayName} 
-                                acceptFile={this.acceptFile}
-                                rejectFile={this.rejectFile}
-                            />
-                            <p className="file-transfer-header">Receiving</p>
-                            <FilesView 
-                                files={receivedFiles} 
-                                channelsOpen={this.props.channelsOpen}
-                                displayName={this.props.displayName} 
-                                acceptFile={this.acceptFile}
-                                rejectFile={this.rejectFile}
-                            />
-                        </div>
-                    )
+            <Fragment>
+                <DragAndDropFile onFileInputChange={this.handleFileInputChange.bind(this)} />
+                {this.props.currentRoom.requestSent && (
+                    <div>
+                        <p className="file-transfer-header">Sending</p>
+                        <FilesView
+                            files={sentFiles}
+                            channelsOpen={this.props.channelsOpen}
+                            displayName={this.props.displayName}
+                            acceptFile={this.acceptFile}
+                            rejectFile={this.rejectFile}
+                        />
+                        <p className="file-transfer-header">Receiving</p>
+                        <FilesView
+                            files={receivedFiles}
+                            channelsOpen={this.props.channelsOpen}
+                            displayName={this.props.displayName}
+                            acceptFile={this.acceptFile}
+                            rejectFile={this.rejectFile}
+                        />
+                    </div>
+                )
 
-                    /*
+                /*
                     <div className="file-container" key={index}>
                         <img src={fileImg} className="file-icon" alt="File is loading..." />
                         <p className="file-name">{file.fileName}</p>
@@ -430,7 +342,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                     </div>
                     */
                 }
-            </div>
+            </Fragment>
         );
     }
 }
