@@ -84,10 +84,10 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
         return (
             <div>
                 Hello world, this is Drag and Drop component.
-                <div className={`${this.state.dragging && 'file-transfer-container-drag'}`} ref={this.dropRef}>
+                <div className={`${this.state.dragging && 'drag-and-drop-container-on-drag'}`} ref={this.dropRef}>
                     {this.state.dragging ? (
                         <div>
-                            <p className="file-transfer-text">Drop file to send.</p>
+                            <p className="drag-and-drop-text">Drop file to send.</p>
                         </div>
                     ) : (
                         <input
