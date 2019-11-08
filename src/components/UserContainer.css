@@ -50,3 +50,20 @@
     margin-top: 4px;
     color: #FBFBF2;
 }
+
+.user-container-x-container {
+    float: right;
+    color: #FBFBF2;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 100%;
+    padding-top: 4px;
+    margin-top: 3px;
+}
+
+.user-container-x-container:hover {
+    background-color: #f4976c;
+    color: #303C6C;
+}

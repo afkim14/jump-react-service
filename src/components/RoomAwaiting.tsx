@@ -7,10 +7,8 @@ type RoomAwaitingProps = {
     invited: ConnectedUserMap
 };
 
-// TODO: Style
 const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
-    <div>
-        <p>Awaiting...</p>
+    <div className="room-awaiting-container">
         {
             Object.keys(props.invited).map((userid, idx) => {
                 if (userid === props.displayName.userid) {
@@ -19,8 +17,18 @@ const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
 
                 return (
                     <div key={idx}>
-                        <p>{props.invited[userid].displayName.displayName}</p>
-                        <p>{props.invited[userid].accepted ? 'Accepted' : 'Pending'}</p>
+                        <div
+                            className="room-awaiting-receipient-circle-icon"
+                            style={{
+                                backgroundColor: props.invited[userid].displayName.color,
+                            }}
+                        />
+                        <p className="room-awaiting-receipient-username">
+                            {props.invited[userid].displayName.displayName}
+                        </p>
+                        <p className={`room-awaiting-status ${!props.invited[userid].accepted && 'room-awaiting-status-pulsing'}`}>
+                            {props.invited[userid].accepted ? 'Accepted' : 'Pending...'}
+                        </p>
                     </div>   
                 )
             })

@@ -142,11 +142,6 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Called when a user is clicked
      */
     selectUser = (displayName: Types.UserDisplay): void => {
-        // If yourself, ignore
-        if (displayName.userid === this.props.user.userid) {
-            return;
-        }
-
         // If already an open room, just open it up
         const roomsIds = Object.keys(this.props.rooms);
         for (let i = 0; i < roomsIds.length; i++) {
@@ -189,6 +184,11 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
     };
 
+    leaveRoom = (roomid: string): void => {
+        this.props.removeRoom(roomid);
+        socket.emit(Constants.LEAVE_ROOM, { roomid });
+    }
+
     /**
      * Sends room invites to invited users in the room.
      */
@@ -223,26 +223,26 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     };
 
     render(): React.ReactNode {
-        let RoomComponent = <div></div>;
         const currentRoom = this.props.rooms[this.state.currentRoomId];
-        if (!currentRoom) {
-            RoomComponent = <MainWelcome userDisplay={this.props.user} />;
-        } else {
-            if (!currentRoom.requestSent) {
-                RoomComponent = <RoomConnect sendRequests={this.sendRequests} />
-            } else {
-                if (currentRoom.full) {
-                    RoomComponent =
-                        <Room
-                            currentRoom={currentRoom}
-                            displayName={this.props.user}
-                            updateRoom={this.props.updateRoom}
-                        />
-                } else {
-                    RoomComponent = <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />
-                }
-            }
-        }
+        const mainWelcomeHtml = <MainWelcome userDisplay={this.props.user} />;
+        const roomConnectHtml = <RoomConnect 
+            currentRoom={currentRoom} 
+            displayName={this.props.user} 
+            sendRequests={this.sendRequests} 
+        />;
+        const roomAwaitingHtml = currentRoom && <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />;
+        const roomConnectedHtml = <Room
+            currentRoom={currentRoom}
+            displayName={this.props.user}
+            updateRoom={this.props.updateRoom}
+        />;
+        const RoomComponent = currentRoom 
+            ? (currentRoom.requestSent 
+                ? (currentRoom.full 
+                    ? roomConnectedHtml 
+                    : roomAwaitingHtml) 
+                : roomConnectHtml) 
+            : mainWelcomeHtml;
 
         return (
             <div>
@@ -258,6 +258,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     updateSearchResults={this.updateSearchResults}
                     searchResults={this.state.searchResults}
                     selectUser={this.selectUser}
+                    leaveRoom={this.leaveRoom}
                     rooms={this.props.rooms}
                     currentRoomId={this.state.currentRoomId}
                 />

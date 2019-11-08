@@ -4,7 +4,6 @@ import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
 import Messaging from './Messaging';
 import FileTransfer from './FileTransfer';
-import PreConnectionRoom from '../components/PreConnectionRoom';
 import ConnectedRoom from '../components/ConnectedRoom';
 
 type RoomProps = {
@@ -82,11 +81,7 @@ export default class Room extends Component<RoomProps, RoomState> {
     render(): React.ReactNode {
         return (
             <div className="standard-container-padding">
-                {!this.props.currentRoom.requestSent ? (
-                    <PreConnectionRoom currentRoom={this.props.currentRoom} displayName={this.props.displayName} />
-                ) : (
-                    <ConnectedRoom currentRoom={this.props.currentRoom} displayName={this.props.displayName} />
-                )}
+                <ConnectedRoom currentRoom={this.props.currentRoom} displayName={this.props.displayName} />
                 <FileTransfer
                     displayName={this.props.displayName}
                     currentRoom={this.props.currentRoom}
