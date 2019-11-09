@@ -3,12 +3,13 @@ import { Dispatch } from 'redux';
 import uuid from 'uuid';
 import FilesView from '../components/FilesView';
 import DragAndDropFile from '../components/DragAndDropFile';
+import CustomButton from '../components/CustomButton';
 import * as Types from '../constants/Types';
 import './FileTransfer.css';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 
-import { addFileToRoom } from '../store/actions/room';
+import { addFileToRoom, SendFile } from '../store/actions/room';
 import { StoreState } from '../store/types';
 import { connect } from 'react-redux';
 
@@ -19,6 +20,7 @@ type FileTransferProps = {
     setReceiveFileHandler: (handler: any) => void;
     updateRoom: (roomid: string, room: Types.Room) => void;
     addFileToRoom: (roomId: string, file: File) => void;
+    sendFile: (roomId: string) => void;
 };
 
 type FileTranferState = {
@@ -79,7 +81,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
         this.handleFileInputChange = this.handleFileInputChange.bind(this);
         this.handleAbortFileTransfer = this.handleAbortFileTransfer.bind(this);
 
-        this.getFilesSentAndReceived = this.getFilesSentAndReceived.bind(this);
+        // this.getFilesSentAndReceived = this.getFilesSentAndReceived.bind(this);
         this.acceptFile = this.acceptFile.bind(this);
         this.rejectFile = this.rejectFile.bind(this);
 
@@ -161,7 +163,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     handleFileInputChange(file: File | null): void {
         if (file) {
             this.props.addFileToRoom(this.props.currentRoom.roomid, file);
-            this.submitFile(file);
         }
     }
 
@@ -216,14 +217,14 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     /**
      * Separate between files sent and files received
      */
-    getFilesSentAndReceived(): { sent: Types.File[]; received: Types.File[] } {
-        const sent: Types.File[] = [];
-        const received: Types.File[] = [];
-        this.props.currentRoom.files.forEach(f => {
-            f.sender.userid === this.props.displayName.userid ? sent.push(f) : received.push(f);
-        });
-        return { sent, received };
-    }
+    // getFilesSentAndReceived(): { sent: Types.File[]; received: Types.File[] } {
+    //     const sent: Types.File[] = [];
+    //     const received: Types.File[] = [];
+    //     this.props.currentRoom.files.forEach(f => {
+    //         f.sender.userid === this.props.displayName.userid ? sent.push(f) : received.push(f);
+    //     });
+    //     return { sent, received };
+    // }
 
     /**
      * Stores our version of a File
@@ -288,9 +289,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     render(): React.ReactNode {
-        const allFiles = this.getFilesSentAndReceived();
-        const sentFiles = allFiles.sent;
-        const receivedFiles = allFiles.received;
         const openConnection = !this.props.currentRoom.requestSent || this.props.channelsOpen;
         return (
             <Fragment>
@@ -298,21 +296,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                 {this.props.currentRoom.requestSent && (
                     <div>
                         <p className="file-transfer-header">Sending</p>
-                        <FilesView
-                            files={sentFiles}
-                            channelsOpen={this.props.channelsOpen}
-                            displayName={this.props.displayName}
-                            acceptFile={this.acceptFile}
-                            rejectFile={this.rejectFile}
-                        />
                         <p className="file-transfer-header">Receiving</p>
-                        <FilesView
-                            files={receivedFiles}
-                            channelsOpen={this.props.channelsOpen}
-                            displayName={this.props.displayName}
-                            acceptFile={this.acceptFile}
-                            rejectFile={this.rejectFile}
-                        />
                     </div>
                 )
 
@@ -349,6 +333,14 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                     </div>
                     */
                 }
+                {this.props.currentRoom.files.length > 0 && (
+                    <CustomButton
+                        text={'Send Files'}
+                        style={{ backgroundColor: '#F4976C' }}
+                        // onClick={this.props.sendFile}
+                        onClick={() => this.props.sendFile(this.props.currentRoom.roomid)}
+                    />
+                )}
             </Fragment>
         );
     }
@@ -356,6 +348,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
     addFileToRoom: (roomId: string, file: File) => dispatch(addFileToRoom(roomId, file)),
+    sendFile: (roomId: string) => dispatch(SendFile(roomId)),
 });
 
 export default connect(
