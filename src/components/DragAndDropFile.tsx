@@ -26,6 +26,7 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
         this.handleFileDragIn = this.handleFileDragIn.bind(this);
         this.handleFileDragOut = this.handleFileDragOut.bind(this);
         this.handleFileDrop = this.handleFileDrop.bind(this);
+        this.handleFileInputChange = this.handleFileInputChange.bind(this);
     }
 
     componentDidMount(): void {
@@ -45,7 +46,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     handleFileInputChange(event: ChangeEvent<HTMLInputElement>): void {
         const file = event.target.files ? event.target.files[0] : null;
         this.props.onFileInputChange(file);
-        console.log('handle file input change');
     }
 
     handleFileDragIn(event: DragEvent<HTMLDivElement>): void {
@@ -72,6 +72,7 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     }
 
     handleFileDrop(event: DragEvent<HTMLDivElement>): void {
+        console.log('hadnle file drop');
         event.preventDefault();
         event.stopPropagation();
         if (event.dataTransfer.files && event.dataTransfer.files[0]) {

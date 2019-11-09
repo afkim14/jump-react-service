@@ -73,4 +73,4 @@ export type SDP = {
 export type IceCandidate = {
     candidate: RTCIceCandidate;
     roomid: string;
-}
+};

@@ -1,4 +1,5 @@
 import React, { Component, ChangeEvent, Fragment } from 'react';
+import { Dispatch } from 'redux';
 import uuid from 'uuid';
 import FilesView from '../components/FilesView';
 import DragAndDropFile from '../components/DragAndDropFile';
@@ -7,12 +8,17 @@ import './FileTransfer.css';
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 
+import { addFileToRoom } from '../store/actions/room';
+import { StoreState } from '../store/types';
+import { connect } from 'react-redux';
+
 type FileTransferProps = {
     currentRoom: Types.Room;
     displayName: Types.UserDisplay;
     channelsOpen: boolean;
     setReceiveFileHandler: (handler: any) => void;
     updateRoom: (roomid: string, room: Types.Room) => void;
+    addFileToRoom: (roomId: string, file: File) => void;
 };
 
 type FileTranferState = {
@@ -154,6 +160,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
     handleFileInputChange(file: File | null): void {
         if (file) {
+            this.props.addFileToRoom(this.props.currentRoom.roomid, file);
             this.submitFile(file);
         }
     }
@@ -347,4 +354,11 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 }
 
-export default FileTransfer;
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+    addFileToRoom: (roomId: string, file: File) => dispatch(addFileToRoom(roomId, file)),
+});
+
+export default connect(
+    null,
+    mapDispatchToProps,
+)(FileTransfer);

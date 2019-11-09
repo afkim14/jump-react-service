@@ -21,3 +21,6 @@ export type REMOVE_ROOM = typeof REMOVE_ROOM;
 
 export const UPDATE_ROOM = 'UPDATE_ROOM';
 export type UPDATE_ROOM = typeof UPDATE_ROOM;
+
+export const ADD_FILE_TO_ROOM = 'ADD_FILE_TO_ROOM';
+export type ADD_FILE_TO_ROOM = typeof ADD_FILE_TO_ROOM;
