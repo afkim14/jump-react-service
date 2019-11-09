@@ -1,0 +1,13 @@
+.drag-and-drop-text {
+    color: #f4976c;
+    font-weight: bold;
+    font-size: 30px;
+    text-align: center;
+    margin-top: 300px;
+}
+
+.drag-and-drop-container-on-drag {
+    background-color: #303c6c;
+    opacity: 0.9;
+    border: 7px dashed #f4976c;
+}

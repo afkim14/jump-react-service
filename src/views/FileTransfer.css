@@ -7,20 +7,6 @@
     background-color: #ffffff00;
 }
 
-.file-transfer-container-drag {
-    background-color: #303C6C;
-    opacity: 0.9;
-    border: 7px dashed #F4976C;
-}
-
-.file-transfer-text {
-    color: #F4976C;
-    font-weight: bold;
-    font-size: 30px;
-    text-align: center;
-    margin-top: 300px;
-}
-
 .file-input {
     margin: 0px auto;
     display: block;
