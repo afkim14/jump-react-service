@@ -73,9 +73,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             this.setState({ roomInvite: invite });
         });
 
-        socket.on(Constants.LEAVE_ROOM, (data: { roomid: string }) => {
-            this.props.removeRoom(data.roomid);
-            if (this.state.currentRoomId === data.roomid) {
+        socket.on(Constants.LEAVE_ROOM, ( roomid: string ) => {
+            this.props.removeRoom(roomid);
+            if (this.state.currentRoomId === roomid) {
                 this.setState({ currentRoomId: '' });
             }
         });
