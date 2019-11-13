@@ -161,6 +161,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
     }
 
     handleFileInputChange(file: File | null): void {
+        console.log('handle fileinput change');
         if (file) {
             this.props.addFileToRoom(this.props.currentRoom.roomid, file);
         }

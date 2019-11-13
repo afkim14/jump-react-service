@@ -11,10 +11,26 @@ class RTC {
     receiveChannel: RTCDataChannel | null;
     customSendChannelStatusHandler: any;
     customReceiveChannelStatusHandler: any;
-    customReceiveDataHandler: any;
+    customReceiveDataHandler: (event: MessageEvent) => void;
     attemptReconnectInterval: any;
     numReconnectRetries: number;
     roomid: string;
+
+    // file transfer fields
+    fileReader: FileReader;
+    receiveBuffer: any[];
+    receivedSize: number;
+    bytesPrev: number;
+    timestampPrev: number;
+    timestampStart: number | null;
+    statsInterval: any;
+    bitrateMax: number;
+    sendProgressMax: number;
+    receiveProgressMax: number;
+    sendProgressValue: number;
+    receiveProgressValue: number;
+    anchorDownloadHref: string;
+    anchorDownloadFileName: string;
 
     constructor(roomid: string) {
         this.localConnection = new RTCPeerConnection();
@@ -22,10 +38,25 @@ class RTC {
         this.receiveChannel = null;
         this.customSendChannelStatusHandler = null;
         this.customReceiveChannelStatusHandler = null;
-        this.customReceiveDataHandler = null;
+        this.customReceiveDataHandler = this.handleReceiveData;
         this.attemptReconnectInterval = null;
         this.numReconnectRetries = 5;
         this.roomid = roomid;
+
+        this.fileReader = new FileReader();
+        this.receiveBuffer = [];
+        this.receivedSize = 0;
+        this.bytesPrev = 0;
+        this.timestampPrev = 0;
+        this.timestampStart = null;
+        this.statsInterval = null;
+        this.bitrateMax = 0;
+        this.sendProgressMax = 0;
+        this.receiveProgressMax = 0;
+        this.sendProgressValue = 0;
+        this.receiveProgressValue = 0;
+        this.anchorDownloadHref = '';
+        this.anchorDownloadFileName = '';
 
         socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
             if (data.roomid !== this.roomid) {
@@ -42,7 +73,7 @@ class RTC {
                             this.localConnection.setLocalDescription(answer);
                             socket.emit(Constants.RTC_DESCRIPTION_ANSWER, {
                                 sdp: this.localConnection.localDescription,
-                                roomid: this.roomid
+                                roomid: this.roomid,
                             });
                         })
                         .catch(this.handleCreateAnswerError);
@@ -67,7 +98,7 @@ class RTC {
             if (data.roomid !== this.roomid) {
                 return;
             }
-            
+
             this.localConnection.addIceCandidate(data.candidate).catch(this.handleAddCandidateError);
         });
     }
@@ -92,7 +123,7 @@ class RTC {
                     console.log('Sender SDP sent.');
                     socket.emit(Constants.RTC_DESCRIPTION_OFFER, {
                         sdp: this.localConnection.localDescription,
-                        roomid: this.roomid
+                        roomid: this.roomid,
                     });
                 })
                 .catch(this.handleCreateDescriptionError);
@@ -101,11 +132,15 @@ class RTC {
         setTimeout(() => {
             if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
                 console.log('Attempting to reconnect');
-                this.attemptReconnectInterval = setInterval(() => {
-                    this.disconnect();
-                    this.connectPeers(channel, initiator);
-                    this.numReconnectRetries -= 1;
-                }, RETRY_INTERVAL_MS, this.numReconnectRetries);
+                this.attemptReconnectInterval = setInterval(
+                    () => {
+                        this.disconnect();
+                        this.connectPeers(channel, initiator);
+                        this.numReconnectRetries -= 1;
+                    },
+                    RETRY_INTERVAL_MS,
+                    this.numReconnectRetries,
+                );
             }
         }, TIMEOUT_MS);
     };
@@ -182,7 +217,7 @@ class RTC {
         if (e.candidate) {
             socket.emit(Constants.ICE_CANDIDATE, {
                 candidate: e.candidate,
-                roomid: this.roomid
+                roomid: this.roomid,
             });
         }
     };
@@ -219,6 +254,7 @@ class RTC {
      * Callback for when receiveChannel is ready to be set.
      */
     receiveChannelCallback = (event: RTCDataChannelEvent): void => {
+        console.log('on receive channel callback');
         this.receiveChannel = event.channel;
         this.receiveChannel.onopen = this.handleReceiveChannelStatusChange;
         this.receiveChannel.onclose = this.handleReceiveChannelStatusChange;
@@ -283,6 +319,24 @@ class RTC {
             return true;
         }
         return false;
+    };
+
+    handleReceiveData = (event: MessageEvent) => {
+        this.receiveBuffer.push(event.data);
+        this.receivedSize += event.data.byteLength;
+
+        if (this.receivedSize >= 1102331) {
+            const received = new Blob(this.receiveBuffer);
+            this.receiveBuffer = [];
+
+            this.anchorDownloadHref = URL.createObjectURL(received);
+            var link = document.createElement('a'); // Or maybe get it from the current document
+            link.href = this.anchorDownloadHref;
+            link.download = 'aDefaultFileName.txt';
+            link.innerHTML = 'Click here to download the file';
+            document.body.appendChild(link); // Or append it whereever you want
+        }
+        console.log(this.receivedSize);
     };
 }
 

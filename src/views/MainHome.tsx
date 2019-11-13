@@ -92,7 +92,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     files: [],
                     rtcConnection: new RTC(data.roomid),
                 };
-        
+
                 this.props.addRoom(newCurrentRoom);
                 this.setState({
                     currentRoomId: newCurrentRoom.roomid,
@@ -102,21 +102,23 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_ACCEPT, (data: { roomid: string, fileid: string }) => {
+        socket.on(Constants.FILE_ACCEPT, (data: { roomid: string; fileid: string }) => {
+            console.log('file accept');
             const updatedRoom = this.props.rooms[data.roomid];
             updatedRoom.files.forEach(f => {
-                if (f.id === data.fileid) {    
+                if (f.id === data.fileid) {
                     f.accepted = true;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
                 }
             });
         });
-    
+
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_REJECT, (data: { roomid: string, fileid: string }) => {
+        socket.on(Constants.FILE_REJECT, (data: { roomid: string; fileid: string }) => {
+            console.log('file reject');
             const updatedRoom = this.props.rooms[data.roomid];
             updatedRoom.files.forEach(f => {
-                if (f.id === data.fileid) {    
+                if (f.id === data.fileid) {
                     f.accepted = false;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
                 }
@@ -187,7 +189,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     leaveRoom = (roomid: string): void => {
         this.props.removeRoom(roomid);
         socket.emit(Constants.LEAVE_ROOM, { roomid });
-    }
+    };
 
     /**
      * Sends room invites to invited users in the room.
@@ -197,7 +199,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         updatedRoom.requestSent = true;
         socket.emit(Constants.SEND_ROOM_INVITES, { roomid: updatedRoom.roomid });
         this.props.updateRoom(updatedRoom.roomid, updatedRoom);
-    }
+    };
 
     /**
      * Accepts incoming transfer request
@@ -225,23 +227,21 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     render(): React.ReactNode {
         const currentRoom = this.props.rooms[this.state.currentRoomId];
         const mainWelcomeHtml = <MainWelcome userDisplay={this.props.user} />;
-        const roomConnectHtml = <RoomConnect 
-            currentRoom={currentRoom} 
-            displayName={this.props.user} 
-            sendRequests={this.sendRequests} 
-        />;
-        const roomAwaitingHtml = currentRoom && <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />;
-        const roomConnectedHtml = <Room
-            currentRoom={currentRoom}
-            displayName={this.props.user}
-            updateRoom={this.props.updateRoom}
-        />;
-        const RoomComponent = currentRoom 
-            ? (currentRoom.requestSent 
-                ? (currentRoom.full 
-                    ? roomConnectedHtml 
-                    : roomAwaitingHtml) 
-                : roomConnectHtml) 
+        const roomConnectHtml = (
+            <RoomConnect currentRoom={currentRoom} displayName={this.props.user} sendRequests={this.sendRequests} />
+        );
+        const roomAwaitingHtml = currentRoom && (
+            <RoomAwaiting displayName={this.props.user} invited={currentRoom.invited} />
+        );
+        const roomConnectedHtml = (
+            <Room currentRoom={currentRoom} displayName={this.props.user} updateRoom={this.props.updateRoom} />
+        );
+        const RoomComponent = currentRoom
+            ? currentRoom.requestSent
+                ? currentRoom.full
+                    ? roomConnectedHtml
+                    : roomAwaitingHtml
+                : roomConnectHtml
             : mainWelcomeHtml;
 
         return (
