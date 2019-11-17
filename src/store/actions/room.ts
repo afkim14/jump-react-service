@@ -1,4 +1,4 @@
-import { Room } from '../../constants/Types';
+import { Room, UserDisplay } from '../../constants/Types';
 import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE } from '../types';
 
 export interface AddRoom {
@@ -25,12 +25,17 @@ export interface AddFileToRoom {
 // TODO: update name to `SendFiles` after implementing sending multiple files
 export interface SendFile {
     type: SEND_FILE;
-    payload: string;
+    payload: SendFilePayload;
 }
 
 interface AddFileToRoomPayload {
     file: File;
     roomId: string;
+}
+
+interface SendFilePayload {
+    roomId: string;
+    sender: UserDisplay;
 }
 
 export type RoomAction = AddRoom | RemoveRoom | UpdateRoom | AddFileToRoom | SendFile;
@@ -67,9 +72,12 @@ export function addFileToRoom(roomId: string, file: File): AddFileToRoom {
     };
 }
 
-export function SendFile(roomId: string): SendFile {
+export function SendFile(roomId: string, sender: UserDisplay): SendFile {
     return {
         type: SEND_FILE,
-        payload: roomId,
+        payload: {
+            roomId,
+            sender,
+        },
     };
 }

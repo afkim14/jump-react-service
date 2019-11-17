@@ -101,6 +101,11 @@ class RTC {
 
             this.localConnection.addIceCandidate(data.candidate).catch(this.handleAddCandidateError);
         });
+
+        socket.on(Constants.SEND_FILE_REQUEST, (data: any) => {
+            console.log('send file request');
+            console.log(data.fileSize);
+        });
     }
 
     /**

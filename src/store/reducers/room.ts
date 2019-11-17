@@ -2,6 +2,8 @@ import { ConnectedRoomMap, Room } from '../../constants/Types';
 import { RoomAction } from '../actions/room';
 import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE } from '../types';
 import RTC from '../../services/RTC';
+import socket from '../../constants/socket-context';
+import Constants from '../../constants/Constants';
 
 const initialState: ConnectedRoomMap = {};
 
@@ -41,7 +43,7 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             };
         case SEND_FILE:
             console.log('starting send file');
-            const room = state[action.payload];
+            const room = state[action.payload.roomId];
             const roomRTCConnection = room.rtcConnection;
             const fileReader = getFileReader();
             let progress = 0;
@@ -49,6 +51,12 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             const fileToSend = room.files.length > 0 ? room.files[0] : null;
 
             if (!roomRTCConnection || !fileToSend) return state;
+
+            socket.emit(Constants.SEND_FILE_REQUEST, {
+                roomid: room.roomid,
+                fileSize: room.files[0].size,
+                sender: action.payload.sender,
+            });
 
             const readFileSlice = (progressOffset: number) => {
                 const slice = fileToSend.slice(progress, progressOffset + chunksize);
