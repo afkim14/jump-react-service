@@ -53,7 +53,7 @@ export type Message = {
     text: string;
 };
 
-export type File = {
+export type FileInfo = {
     id: string;
     sender: UserDisplay;
     name: string;

@@ -21,7 +21,7 @@ type FileTransferProps = {
 };
 
 type FileTranferState = {
-    currentFile: Types.File;
+    currentFile: Types.FileInfo;
     currentFileToSend: any;
     currentFileSendProgressMax: number;
     currentFileReceiveProgressMax: number;
@@ -134,7 +134,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             });
 
             const updatedRoom = this.props.currentRoom;
-            updatedRoom.files.forEach(f => {
+            updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === this.state.currentFile.id) {
                     f.completed = true;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
