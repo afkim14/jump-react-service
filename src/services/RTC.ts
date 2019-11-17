@@ -335,6 +335,7 @@ class RTC {
             this.receiveBuffer = [];
 
             this.anchorDownloadHref = URL.createObjectURL(received);
+            // TODO: put this logic into ReceivedFiles.tsx
             var link = document.createElement('a'); // Or maybe get it from the current document
             link.href = this.anchorDownloadHref;
             link.download = this.anchorDownloadFileName;

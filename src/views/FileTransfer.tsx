@@ -3,6 +3,7 @@ import { Dispatch } from 'redux';
 import uuid from 'uuid';
 import DragAndDropFile from '../components/DragAndDropFile';
 import CustomButton from '../components/CustomButton';
+import ReceivedFiles from '../components/ReceivedFiles';
 import * as Types from '../constants/Types';
 import './FileTransfer.css';
 
@@ -248,6 +249,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                         onClick={() => this.props.sendFile(this.props.currentRoom.roomid, this.props.displayName)}
                     />
                 )}
+                <ReceivedFiles receivedFiles={[]} />
             </Fragment>
         );
     }
