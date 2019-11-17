@@ -1,16 +1,12 @@
-import React, { Component, ChangeEvent, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Dispatch } from 'redux';
 import uuid from 'uuid';
-import FilesView from '../components/FilesView';
 import DragAndDropFile from '../components/DragAndDropFile';
 import CustomButton from '../components/CustomButton';
 import * as Types from '../constants/Types';
 import './FileTransfer.css';
-import socket from '../constants/socket-context';
-import Constants from '../constants/Constants';
 
 import { addFileToRoom, SendFile } from '../store/actions/room';
-import { StoreState } from '../store/types';
 import { connect } from 'react-redux';
 
 type FileTransferProps = {

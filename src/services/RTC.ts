@@ -105,8 +105,6 @@ class RTC {
         });
 
         socket.on(Constants.SEND_FILE_REQUEST, (data: any) => {
-            console.log('send file request');
-            console.log(data.fileSize);
             this.receivingFileMaxSize = data.fileSize;
             this.anchorDownloadFileName = data.fileName;
         });
@@ -158,7 +156,6 @@ class RTC {
      * Disconnects from send and receive data channels, also creates new RTCPeerConnection.
      */
     disconnect = (): void => {
-        console.log('Disconnect from RTC connection');
         this.sendChannel && (this.sendChannel as RTCDataChannel).close();
         this.receiveChannel && (this.receiveChannel as RTCDataChannel).close();
 
@@ -263,7 +260,6 @@ class RTC {
      * Callback for when receiveChannel is ready to be set.
      */
     receiveChannelCallback = (event: RTCDataChannelEvent): void => {
-        console.log('on receive channel callback');
         this.receiveChannel = event.channel;
         this.receiveChannel.onopen = this.handleReceiveChannelStatusChange;
         this.receiveChannel.onclose = this.handleReceiveChannelStatusChange;
@@ -333,7 +329,6 @@ class RTC {
     handleReceiveData = (event: MessageEvent) => {
         this.receiveBuffer.push(event.data);
         this.receivedSize += event.data.byteLength;
-        console.log('handle receive data file max size:', this.receivingFileMaxSize);
 
         if (this.receivedSize >= this.receivingFileMaxSize) {
             const received = new Blob(this.receiveBuffer);
