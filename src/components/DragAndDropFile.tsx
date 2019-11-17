@@ -44,7 +44,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     }
 
     handleFileInputChange(event: ChangeEvent<HTMLInputElement>): void {
-        console.log('handle file input change2');
         const file = event.target.files ? event.target.files[0] : null;
         this.props.onFileInputChange(file);
     }
