@@ -248,7 +248,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                         onClick={() => this.props.sendFile(this.props.currentRoom.roomid, this.props.displayName)}
                     />
                 )}
-                <ReceivedFiles receivedFiles={[]} />
+                <ReceivedFiles receivedFiles={this.props.currentRoom.receivedFiles} />
             </Fragment>
         );
     }

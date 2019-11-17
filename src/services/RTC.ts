@@ -1,6 +1,8 @@
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
+import store from '../store';
+import { ReceivedFile } from '../store/actions/room';
 
 const TIMEOUT_MS = 1500;
 const RETRY_INTERVAL_MS = 3000;
@@ -335,12 +337,7 @@ class RTC {
             this.receiveBuffer = [];
 
             this.anchorDownloadHref = URL.createObjectURL(received);
-            // TODO: put this logic into ReceivedFiles.tsx
-            var link = document.createElement('a'); // Or maybe get it from the current document
-            link.href = this.anchorDownloadHref;
-            link.download = this.anchorDownloadFileName;
-            link.innerHTML = 'Click here to download the file';
-            document.body.appendChild(link); // Or append it whereever you want
+            store.dispatch(ReceivedFile(this.roomid, this.anchorDownloadHref, this.anchorDownloadFileName));
         }
     };
 }

@@ -72,7 +72,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     }
 
     handleFileDrop(event: DragEvent<HTMLDivElement>): void {
-        console.log('hadnle file drop');
         event.preventDefault();
         event.stopPropagation();
         if (event.dataTransfer.files && event.dataTransfer.files[0]) {

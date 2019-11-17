@@ -1,6 +1,6 @@
-import { ConnectedRoomMap, Room } from '../../constants/Types';
+import { ConnectedRoomMap, Room, ReceivedFile } from '../../constants/Types';
 import { RoomAction } from '../actions/room';
-import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE } from '../types';
+import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE, RECEIVED_FILE } from '../types';
 import RTC from '../../services/RTC';
 import socket from '../../constants/socket-context';
 import Constants from '../../constants/Constants';
@@ -42,7 +42,6 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
                 [roomId]: roomWithNewFile,
             };
         case SEND_FILE:
-            console.log('starting send file');
             const room = state[action.payload.roomId];
             const roomRTCConnection = room.rtcConnection;
             const fileReader = getFileReader();
@@ -68,7 +67,6 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
                 const result = fileReader.result as ArrayBuffer;
                 ((roomRTCConnection as RTC).sendChannel as RTCDataChannel).send(result);
                 progress += result.byteLength;
-                console.log(progress, fileToSend.size);
                 if (progress < fileToSend.size) {
                     readFileSlice(progress);
                 }
@@ -77,8 +75,20 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             fileReader.onload = handleFileReaderLoadEvent;
             readFileSlice(0);
 
-            console.log('made it to end of send file');
             return state;
+
+        case RECEIVED_FILE:
+            const roomWithReceivedFile = state[action.payload.roomId];
+            const receivedFile: ReceivedFile = {
+                anchorDownloadHref: action.payload.fileAnchorDownloadHref,
+                fileName: action.payload.fileName,
+            };
+            return {
+                [action.payload.roomId]: {
+                    ...roomWithReceivedFile,
+                    receivedFiles: [...roomWithReceivedFile.receivedFiles, receivedFile],
+                },
+            };
 
         default:
             return state;

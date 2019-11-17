@@ -26,6 +26,7 @@ export type Room = {
     messages: Array<Message>;
     files: Array<any>;
     rtcConnection: RTC | null;
+    receivedFiles: Array<ReceivedFile>;
 };
 
 export type RoomInvite = {
@@ -62,6 +63,11 @@ export type FileInfo = {
     anchorDownloadFileName: string;
     accepted: boolean;
     completed: boolean;
+};
+
+export type ReceivedFile = {
+    fileName: string;
+    anchorDownloadHref: string;
 };
 
 // RTC STUFF

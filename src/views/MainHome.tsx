@@ -91,6 +91,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
                     messages: [],
                     files: [],
                     rtcConnection: new RTC(data.roomid),
+                    receivedFiles: [],
                 };
 
                 this.props.addRoom(newCurrentRoom);
@@ -103,9 +104,8 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
         socket.on(Constants.FILE_ACCEPT, (data: { roomid: string; fileid: string }) => {
-            console.log('file accept');
             const updatedRoom = this.props.rooms[data.roomid];
-            updatedRoom.files.forEach(f => {
+            updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === data.fileid) {
                     f.accepted = true;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
@@ -115,9 +115,8 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
         socket.on(Constants.FILE_REJECT, (data: { roomid: string; fileid: string }) => {
-            console.log('file reject');
             const updatedRoom = this.props.rooms[data.roomid];
-            updatedRoom.files.forEach(f => {
+            updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === data.fileid) {
                     f.accepted = false;
                     this.props.updateRoom(updatedRoom.roomid, updatedRoom);
@@ -172,6 +171,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             messages: [],
             files: [],
             rtcConnection: null,
+            receivedFiles: [],
         };
 
         socket.emit(Constants.CREATE_ROOM, { invited: newRoom.invited });

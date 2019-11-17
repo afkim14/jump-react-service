@@ -1,11 +1,24 @@
-import React, { Component } from 'react';
+import React, { FC, Fragment } from 'react';
+import { ReceivedFile } from '../constants/Types';
 
 type ReceivedFilesProps = {
-    receivedFiles: any[];
+    receivedFiles: ReceivedFile[];
 };
 
-const ReceivedFiles = (props: ReceivedFilesProps) => {
-    return <div>Hello Received File Component</div>;
+const ReceivedFiles: FC<ReceivedFilesProps> = (props: ReceivedFilesProps) => {
+    const receivedFiles = props.receivedFiles.map((receivedFile: ReceivedFile) => {
+        return (
+            <a href={receivedFile.anchorDownloadHref} download={receivedFile.fileName}>
+                {receivedFile.fileName}
+            </a>
+        );
+    });
+    return (
+        <Fragment>
+            {receivedFiles.length > 0 && <h1>Click to download received files</h1>}
+            {receivedFiles}
+        </Fragment>
+    );
 };
 
 export default ReceivedFiles;
