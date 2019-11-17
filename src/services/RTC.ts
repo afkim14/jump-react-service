@@ -31,6 +31,7 @@ class RTC {
     receiveProgressValue: number;
     anchorDownloadHref: string;
     anchorDownloadFileName: string;
+    receivingFileMaxSize: number;
 
     constructor(roomid: string) {
         this.localConnection = new RTCPeerConnection();
@@ -57,6 +58,7 @@ class RTC {
         this.receiveProgressValue = 0;
         this.anchorDownloadHref = '';
         this.anchorDownloadFileName = '';
+        this.receivingFileMaxSize = Infinity;
 
         socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
             if (data.roomid !== this.roomid) {
@@ -105,6 +107,8 @@ class RTC {
         socket.on(Constants.SEND_FILE_REQUEST, (data: any) => {
             console.log('send file request');
             console.log(data.fileSize);
+            this.receivingFileMaxSize = data.fileSize;
+            this.anchorDownloadFileName = data.fileName;
         });
     }
 
@@ -329,19 +333,19 @@ class RTC {
     handleReceiveData = (event: MessageEvent) => {
         this.receiveBuffer.push(event.data);
         this.receivedSize += event.data.byteLength;
+        console.log('handle receive data file max size:', this.receivingFileMaxSize);
 
-        if (this.receivedSize >= 1102331) {
+        if (this.receivedSize >= this.receivingFileMaxSize) {
             const received = new Blob(this.receiveBuffer);
             this.receiveBuffer = [];
 
             this.anchorDownloadHref = URL.createObjectURL(received);
             var link = document.createElement('a'); // Or maybe get it from the current document
             link.href = this.anchorDownloadHref;
-            link.download = 'aDefaultFileName.txt';
+            link.download = this.anchorDownloadFileName;
             link.innerHTML = 'Click here to download the file';
             document.body.appendChild(link); // Or append it whereever you want
         }
-        console.log(this.receivedSize);
     };
 }
 

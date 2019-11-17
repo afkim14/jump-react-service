@@ -54,6 +54,7 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
 
             socket.emit(Constants.SEND_FILE_REQUEST, {
                 roomid: room.roomid,
+                fileName: room.files[0].name,
                 fileSize: room.files[0].size,
                 sender: action.payload.sender,
             });

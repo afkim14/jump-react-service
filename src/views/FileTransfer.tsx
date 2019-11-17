@@ -226,12 +226,6 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             accepted: false,
             completed: false,
         };
-        // console.log('emitting send file request');
-        // socket.emit(Constants.SEND_FILE_REQUEST, {
-        //     roomid: this.props.currentRoom.roomid,
-        //     fileSize: newFile.size,
-        //     sender: this.props.displayName,
-        // });
 
         const updatedRoom = this.props.currentRoom;
         updatedRoom.files.push(newFile);
