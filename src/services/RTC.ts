@@ -1,6 +1,8 @@
 import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
+import store from '../store';
+import { ReceivedFile } from '../store/actions/room';
 
 const TIMEOUT_MS = 1500;
 const RETRY_INTERVAL_MS = 3000;
@@ -11,10 +13,27 @@ class RTC {
     receiveChannel: RTCDataChannel | null;
     customSendChannelStatusHandler: any;
     customReceiveChannelStatusHandler: any;
-    customReceiveDataHandler: any;
+    customReceiveDataHandler: (event: MessageEvent) => void;
     attemptReconnectInterval: any;
     numReconnectRetries: number;
     roomid: string;
+
+    // file transfer fields
+    fileReader: FileReader;
+    receiveBuffer: any[];
+    receivedSize: number;
+    bytesPrev: number;
+    timestampPrev: number;
+    timestampStart: number | null;
+    statsInterval: any;
+    bitrateMax: number;
+    sendProgressMax: number;
+    receiveProgressMax: number;
+    sendProgressValue: number;
+    receiveProgressValue: number;
+    anchorDownloadHref: string;
+    anchorDownloadFileName: string;
+    receivingFileMaxSize: number;
 
     constructor(roomid: string) {
         this.localConnection = new RTCPeerConnection();
@@ -22,10 +41,26 @@ class RTC {
         this.receiveChannel = null;
         this.customSendChannelStatusHandler = null;
         this.customReceiveChannelStatusHandler = null;
-        this.customReceiveDataHandler = null;
+        this.customReceiveDataHandler = this.handleReceiveData;
         this.attemptReconnectInterval = null;
         this.numReconnectRetries = 5;
         this.roomid = roomid;
+
+        this.fileReader = new FileReader();
+        this.receiveBuffer = [];
+        this.receivedSize = 0;
+        this.bytesPrev = 0;
+        this.timestampPrev = 0;
+        this.timestampStart = null;
+        this.statsInterval = null;
+        this.bitrateMax = 0;
+        this.sendProgressMax = 0;
+        this.receiveProgressMax = 0;
+        this.sendProgressValue = 0;
+        this.receiveProgressValue = 0;
+        this.anchorDownloadHref = '';
+        this.anchorDownloadFileName = '';
+        this.receivingFileMaxSize = Infinity;
 
         socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
             if (data.roomid !== this.roomid) {
@@ -42,7 +77,7 @@ class RTC {
                             this.localConnection.setLocalDescription(answer);
                             socket.emit(Constants.RTC_DESCRIPTION_ANSWER, {
                                 sdp: this.localConnection.localDescription,
-                                roomid: this.roomid
+                                roomid: this.roomid,
                             });
                         })
                         .catch(this.handleCreateAnswerError);
@@ -67,8 +102,13 @@ class RTC {
             if (data.roomid !== this.roomid) {
                 return;
             }
-            
+
             this.localConnection.addIceCandidate(data.candidate).catch(this.handleAddCandidateError);
+        });
+
+        socket.on(Constants.SEND_FILE_REQUEST, (data: any) => {
+            this.receivingFileMaxSize = data.fileSize;
+            this.anchorDownloadFileName = data.fileName;
         });
     }
 
@@ -92,7 +132,7 @@ class RTC {
                     console.log('Sender SDP sent.');
                     socket.emit(Constants.RTC_DESCRIPTION_OFFER, {
                         sdp: this.localConnection.localDescription,
-                        roomid: this.roomid
+                        roomid: this.roomid,
                     });
                 })
                 .catch(this.handleCreateDescriptionError);
@@ -101,11 +141,15 @@ class RTC {
         setTimeout(() => {
             if (!this.fullyConnected() && !this.attemptReconnectInterval && this.numReconnectRetries > 0) {
                 console.log('Attempting to reconnect');
-                this.attemptReconnectInterval = setInterval(() => {
-                    this.disconnect();
-                    this.connectPeers(channel, initiator);
-                    this.numReconnectRetries -= 1;
-                }, RETRY_INTERVAL_MS, this.numReconnectRetries);
+                this.attemptReconnectInterval = setInterval(
+                    () => {
+                        this.disconnect();
+                        this.connectPeers(channel, initiator);
+                        this.numReconnectRetries -= 1;
+                    },
+                    RETRY_INTERVAL_MS,
+                    this.numReconnectRetries,
+                );
             }
         }, TIMEOUT_MS);
     };
@@ -114,7 +158,6 @@ class RTC {
      * Disconnects from send and receive data channels, also creates new RTCPeerConnection.
      */
     disconnect = (): void => {
-        console.log('Disconnect from RTC connection');
         this.sendChannel && (this.sendChannel as RTCDataChannel).close();
         this.receiveChannel && (this.receiveChannel as RTCDataChannel).close();
 
@@ -182,7 +225,7 @@ class RTC {
         if (e.candidate) {
             socket.emit(Constants.ICE_CANDIDATE, {
                 candidate: e.candidate,
-                roomid: this.roomid
+                roomid: this.roomid,
             });
         }
     };
@@ -283,6 +326,19 @@ class RTC {
             return true;
         }
         return false;
+    };
+
+    handleReceiveData = (event: MessageEvent) => {
+        this.receiveBuffer.push(event.data);
+        this.receivedSize += event.data.byteLength;
+
+        if (this.receivedSize >= this.receivingFileMaxSize) {
+            const received = new Blob(this.receiveBuffer);
+            this.receiveBuffer = [];
+
+            this.anchorDownloadHref = URL.createObjectURL(received);
+            store.dispatch(ReceivedFile(this.roomid, this.anchorDownloadHref, this.anchorDownloadFileName));
+        }
     };
 }
 

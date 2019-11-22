@@ -26,6 +26,7 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
         this.handleFileDragIn = this.handleFileDragIn.bind(this);
         this.handleFileDragOut = this.handleFileDragOut.bind(this);
         this.handleFileDrop = this.handleFileDrop.bind(this);
+        this.handleFileInputChange = this.handleFileInputChange.bind(this);
     }
 
     componentDidMount(): void {
@@ -45,7 +46,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     handleFileInputChange(event: ChangeEvent<HTMLInputElement>): void {
         const file = event.target.files ? event.target.files[0] : null;
         this.props.onFileInputChange(file);
-        console.log('handle file input change');
     }
 
     handleFileDragIn(event: DragEvent<HTMLDivElement>): void {
@@ -83,7 +83,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     render(): React.ReactNode {
         return (
             <div>
-                Hello world, this is Drag and Drop component.
                 <div className={`${this.state.dragging && 'drag-and-drop-container-on-drag'}`} ref={this.dropRef}>
                     {this.state.dragging ? (
                         <div>

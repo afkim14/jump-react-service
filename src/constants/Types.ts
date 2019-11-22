@@ -26,6 +26,7 @@ export type Room = {
     messages: Array<Message>;
     files: Array<any>;
     rtcConnection: RTC | null;
+    receivedFiles: Array<ReceivedFile>;
 };
 
 export type RoomInvite = {
@@ -53,7 +54,7 @@ export type Message = {
     text: string;
 };
 
-export type File = {
+export type FileInfo = {
     id: string;
     sender: UserDisplay;
     name: string;
@@ -62,6 +63,11 @@ export type File = {
     anchorDownloadFileName: string;
     accepted: boolean;
     completed: boolean;
+};
+
+export type ReceivedFile = {
+    fileName: string;
+    anchorDownloadHref: string;
 };
 
 // RTC STUFF
@@ -73,4 +79,4 @@ export type SDP = {
 export type IceCandidate = {
     candidate: RTCIceCandidate;
     roomid: string;
-}
+};

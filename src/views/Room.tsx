@@ -25,7 +25,7 @@ export default class Room extends Component<RoomProps, RoomState> {
         receiveChannelOpen: false,
         receiveMessageHandler: null,
         receiveFileHandler: null,
-    }
+    };
 
     componentDidMount(): void {
         // Attempt to connect to room when this component loads.
@@ -34,11 +34,13 @@ export default class Room extends Component<RoomProps, RoomState> {
         if (this.props.currentRoom.rtcConnection) {
             this.props.currentRoom.rtcConnection.connectPeers(
                 `${this.props.currentRoom.roomid}-data-channel`,
-                this.props.displayName.userid === this.props.currentRoom.owner
+                this.props.displayName.userid === this.props.currentRoom.owner,
             );
             this.props.currentRoom.rtcConnection.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
-            this.props.currentRoom.rtcConnection.setHandleReceiveChannelStatusChange(this.handleReceiveChannelStatusChange);
-            this.props.currentRoom.rtcConnection.setReceiveDataHandler(this.handleReceiveData);
+            this.props.currentRoom.rtcConnection.setHandleReceiveChannelStatusChange(
+                this.handleReceiveChannelStatusChange,
+            );
+            // this.props.currentRoom.rtcConnection.setReceiveDataHandler(this.handleReceiveData);
 
             this.props.currentRoom.rtcConnection.setSendChannelBinaryType('arraybuffer');
             this.props.currentRoom.rtcConnection.setReceiveChannelBinaryType('arraybuffer');
@@ -50,14 +52,14 @@ export default class Room extends Component<RoomProps, RoomState> {
      */
     handleSendChannelStatusChange = (open: boolean): void => {
         this.setState({ sendChannelOpen: open });
-    }
+    };
 
     /**
      * Custom handler for status change in receive channel. Needed to re-render component.
      */
     handleReceiveChannelStatusChange = (open: boolean): void => {
         this.setState({ receiveChannelOpen: open });
-    }
+    };
 
     handleReceiveData = (event: MessageEvent): void => {
         // TODO: HAVE TO FIND A WAY TO DIFFERENTIATE DATA FOR MESSAGES AND FILE DATA (some property?)
@@ -68,15 +70,15 @@ export default class Room extends Component<RoomProps, RoomState> {
         // if (this.state.receiveFileHandler) {
         //     this.state.receiveFileHandler(event);
         // }
-    }
+    };
 
     setReceiveMessageHandler = (handler: any): void => {
         this.setState({ receiveMessageHandler: handler });
-    }
+    };
 
     setReceeiveFileHandler = (handler: any): void => {
         this.setState({ receiveFileHandler: handler });
-    }
+    };
 
     render(): React.ReactNode {
         return (

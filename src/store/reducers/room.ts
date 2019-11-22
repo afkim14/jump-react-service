@@ -1,6 +1,9 @@
-import { ConnectedRoomMap } from '../../constants/Types';
+import { ConnectedRoomMap, Room, ReceivedFile } from '../../constants/Types';
 import { RoomAction } from '../actions/room';
-import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM } from '../types';
+import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE, RECEIVED_FILE } from '../types';
+import RTC from '../../services/RTC';
+import socket from '../../constants/socket-context';
+import Constants from '../../constants/Constants';
 
 const initialState: ConnectedRoomMap = {};
 
@@ -17,12 +20,86 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             return roomsToKeep;
         case UPDATE_ROOM:
             const roomIdToUpdate = action.payload;
-            return Object.assign({}, state, {
-                [roomIdToUpdate]: action.data
+            return {
+                ...state,
+                [roomIdToUpdate]: action.data,
+            };
+        case ADD_FILE_TO_ROOM:
+            const { roomId, file } = action.payload;
+            const oldRoomState = state[roomId];
+
+            // TODO: support adding multiple files
+            if (oldRoomState.files.length > 0) {
+                return state;
+            }
+
+            const roomWithNewFile: Room = {
+                ...oldRoomState,
+                files: [...oldRoomState.files, file],
+            };
+            return {
+                ...state,
+                [roomId]: roomWithNewFile,
+            };
+        case SEND_FILE:
+            const room = state[action.payload.roomId];
+            const roomRTCConnection = room.rtcConnection;
+            const fileReader = getFileReader();
+            let progress = 0;
+            const chunksize = 16384;
+            const fileToSend = room.files.length > 0 ? room.files[0] : null;
+
+            if (!roomRTCConnection || !fileToSend) return state;
+
+            socket.emit(Constants.SEND_FILE_REQUEST, {
+                roomid: room.roomid,
+                fileName: room.files[0].name,
+                fileSize: room.files[0].size,
+                sender: action.payload.sender,
             });
+
+            const readFileSlice = (progressOffset: number) => {
+                const slice = fileToSend.slice(progress, progressOffset + chunksize);
+                return fileReader.readAsArrayBuffer(slice);
+            };
+
+            const handleFileReaderLoadEvent = (event: ProgressEvent) => {
+                const result = fileReader.result as ArrayBuffer;
+                ((roomRTCConnection as RTC).sendChannel as RTCDataChannel).send(result);
+                progress += result.byteLength;
+                if (progress < fileToSend.size) {
+                    readFileSlice(progress);
+                }
+            };
+
+            fileReader.onload = handleFileReaderLoadEvent;
+            readFileSlice(0);
+
+            return state;
+
+        case RECEIVED_FILE:
+            const roomWithReceivedFile = state[action.payload.roomId];
+            const receivedFile: ReceivedFile = {
+                anchorDownloadHref: action.payload.fileAnchorDownloadHref,
+                fileName: action.payload.fileName,
+            };
+            return {
+                [action.payload.roomId]: {
+                    ...roomWithReceivedFile,
+                    receivedFiles: [...roomWithReceivedFile.receivedFiles, receivedFile],
+                },
+            };
+
         default:
             return state;
     }
+}
+
+function getFileReader(): FileReader {
+    const fileReader = new FileReader();
+    fileReader.onerror = error => console.error('Error reading file:', error);
+    fileReader.onabort = event => console.log('File reading aborted:', event);
+    return fileReader;
 }
 
 export default userReducer;
