@@ -6,9 +6,9 @@ type ReceivedFilesProps = {
 };
 
 const ReceivedFiles: FC<ReceivedFilesProps> = (props: ReceivedFilesProps) => {
-    const receivedFiles = props.receivedFiles.map((receivedFile: ReceivedFile) => {
+    const receivedFiles = props.receivedFiles.map((receivedFile: ReceivedFile, idx: number) => {
         return (
-            <a href={receivedFile.anchorDownloadHref} download={receivedFile.fileName}>
+            <a key={idx} href={receivedFile.anchorDownloadHref} download={receivedFile.fileName}>
                 {receivedFile.fileName}
             </a>
         );
