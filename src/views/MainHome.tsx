@@ -54,10 +54,6 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             this.setState({ users, searchResults: Object.values(users) });
         });
 
-        socket.on(Constants.SEARCH_USERS, (searchResults: Types.UserDisplay[]) => {
-            this.setState({ searchResults });
-        });
-
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
             // Update with roomid given by server and open room
             if (this.state.creatingRoom) {
@@ -141,9 +137,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Returns search result from trie
      */
     updateSearchResults = (search: string): void => {
-        search === ''
-            ? this.setState({ searchResults: Object.values(this.state.users) })
-            : socket.emit(Constants.SEARCH_USERS, search);
+        socket.emit(Constants.SEARCH_USERS, search);
     };
 
     /**
