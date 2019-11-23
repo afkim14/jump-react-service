@@ -16,8 +16,8 @@ type MainHomeProps = {
     setUser: (user: Types.UserDisplay) => void;
     rooms: Types.ConnectedRoomMap;
     addRoom: (room: Types.Room) => void;
-    removeRoom: (roomid: string) => void;
-    updateRoom: (roomid: string, room: Types.Room) => void;
+    removeRoom: (roomId: string) => void;
+    updateRoom: (roomId: string, room: Types.Room) => void;
 };
 
 type MainHomeState = {
@@ -29,8 +29,8 @@ type MainHomeState = {
 };
 
 const emptyRoomInvite = {
-    sender: { userid: '', displayName: '', color: '' },
-    roomid: '',
+    sender: { userId: '', displayName: '', color: '' },
+    roomId: '',
 };
 
 export default class MainHome extends Component<MainHomeProps, MainHomeState> {
@@ -54,14 +54,18 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             this.setState({ users, searchResults: Object.values(users) });
         });
 
+        socket.on(Constants.SEARCH_USERS, (searchResults: Types.UserDisplay[]) => {
+            this.setState({ searchResults });
+        });
+
         socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
             // Update with roomid given by server and open room
             if (this.state.creatingRoom) {
                 const updatedRoom = this.state.creatingRoom;
-                updatedRoom.roomid = roomInfo.roomid;
-                updatedRoom.rtcConnection = new RTC(roomInfo.roomid);
+                updatedRoom.roomId = roomInfo.roomId;
+                updatedRoom.rtcConnection = new RTC(roomInfo.roomId);
                 this.props.addRoom(updatedRoom);
-                this.setState({ creatingRoom: null, currentRoomId: updatedRoom.roomid });
+                this.setState({ creatingRoom: null, currentRoomId: updatedRoom.roomId });
             }
         });
 
@@ -69,60 +73,60 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             this.setState({ roomInvite: invite });
         });
 
-        socket.on(Constants.LEAVE_ROOM, ( roomid: string ) => {
-            this.props.removeRoom(roomid);
-            if (this.state.currentRoomId === roomid) {
+        socket.on(Constants.LEAVE_ROOM, ( roomId: string ) => {
+            this.props.removeRoom(roomId);
+            if (this.state.currentRoomId === roomId) {
                 this.setState({ currentRoomId: '' });
             }
         });
 
         socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
-            const updatedRoom = this.props.rooms[data.roomid];
+            const updatedRoom = this.props.rooms[data.roomId];
             if (updatedRoom) {
                 // Users connected to the room already
-                updatedRoom.invited[data.userid].accepted = data.type === Constants.USER_CONNECT;
+                updatedRoom.invited[data.userId].accepted = data.type === Constants.USER_CONNECT;
                 updatedRoom.full = data.full;
-                this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                this.props.updateRoom(updatedRoom.roomId, updatedRoom);
             } else {
                 // New users who just accepted a room invite
                 const newCurrentRoom = {
-                    roomid: data.roomid,
+                    roomId: data.roomId,
                     owner: data.owner,
                     requestSent: true,
                     invited: data.invited,
                     full: data.full,
                     messages: [],
                     files: [],
-                    rtcConnection: new RTC(data.roomid),
+                    rtcConnection: new RTC(data.roomId),
                     receivedFiles: [],
                 };
 
                 this.props.addRoom(newCurrentRoom);
                 this.setState({
-                    currentRoomId: newCurrentRoom.roomid,
+                    currentRoomId: newCurrentRoom.roomId,
                     roomInvite: emptyRoomInvite,
                 });
             }
         });
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_ACCEPT, (data: { roomid: string; fileid: string }) => {
-            const updatedRoom = this.props.rooms[data.roomid];
+        socket.on(Constants.FILE_ACCEPT, (data: { roomId: string; fileId: string }) => {
+            const updatedRoom = this.props.rooms[data.roomId];
             updatedRoom.files.forEach((f: Types.FileInfo) => {
-                if (f.id === data.fileid) {
+                if (f.id === data.fileId) {
                     f.accepted = true;
-                    this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                    this.props.updateRoom(updatedRoom.roomId, updatedRoom);
                 }
             });
         });
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_REJECT, (data: { roomid: string; fileid: string }) => {
-            const updatedRoom = this.props.rooms[data.roomid];
+        socket.on(Constants.FILE_REJECT, (data: { roomId: string; fileId: string }) => {
+            const updatedRoom = this.props.rooms[data.roomId];
             updatedRoom.files.forEach((f: Types.FileInfo) => {
-                if (f.id === data.fileid) {
+                if (f.id === data.fileId) {
                     f.accepted = false;
-                    this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                    this.props.updateRoom(updatedRoom.roomId, updatedRoom);
                 }
             });
         });
@@ -137,7 +141,9 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Returns search result from trie
      */
     updateSearchResults = (search: string): void => {
-        socket.emit(Constants.SEARCH_USERS, search);
+        search === ''
+            ? this.setState({ searchResults: Object.values(this.state.users) })
+            : socket.emit(Constants.SEARCH_USERS, search);
     };
 
     /**
@@ -147,7 +153,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         // If already an open room, just open it up
         const roomsIds = Object.keys(this.props.rooms);
         for (let i = 0; i < roomsIds.length; i++) {
-            if (this.props.rooms[roomsIds[i]].invited[displayName.userid]) {
+            if (this.props.rooms[roomsIds[i]].invited[displayName.userId]) {
                 this.setState({ currentRoomId: roomsIds[i] });
                 return;
             }
@@ -155,15 +161,15 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
         // Create new room
         const newRoom = {
-            roomid: '',
-            owner: this.props.user.userid,
+            roomId: '',
+            owner: this.props.user.userId,
             requestSent: false,
             invited: {
-                [this.props.user.userid]: {
+                [this.props.user.userId]: {
                     accepted: true,
                     displayName: this.props.user,
                 },
-                [displayName.userid]: {
+                [displayName.userId]: {
                     accepted: false,
                     displayName: displayName,
                 },
@@ -179,17 +185,17 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         this.setState({ creatingRoom: newRoom });
 
         // Remove any rooms that were open but request wasn't sent
-        Object.keys(this.props.rooms).forEach(roomid => {
-            if (!this.props.rooms[roomid].requestSent) {
+        Object.keys(this.props.rooms).forEach(roomId => {
+            if (!this.props.rooms[roomId].requestSent) {
                 // TODO: properly close RTC connection
-                delete this.props.rooms[roomid];
+                delete this.props.rooms[roomId];
             }
         });
     };
 
-    leaveRoom = (roomid: string): void => {
-        this.props.removeRoom(roomid);
-        socket.emit(Constants.LEAVE_ROOM, { roomid });
+    leaveRoom = (roomId: string): void => {
+        this.props.removeRoom(roomId);
+        socket.emit(Constants.LEAVE_ROOM, { roomId });
     };
 
     /**
@@ -198,8 +204,8 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     sendRequests = (): void => {
         const updatedRoom = this.props.rooms[this.state.currentRoomId];
         updatedRoom.requestSent = true;
-        socket.emit(Constants.SEND_ROOM_INVITES, { roomid: updatedRoom.roomid });
-        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+        socket.emit(Constants.SEND_ROOM_INVITES, { roomId: updatedRoom.roomId });
+        this.props.updateRoom(updatedRoom.roomId, updatedRoom);
     };
 
     /**
@@ -209,7 +215,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         socket.emit(Constants.ACCEPT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
             respondedBy: this.props.user,
-            roomid: this.state.roomInvite.roomid,
+            roomId: this.state.roomInvite.roomId,
         });
     };
 
@@ -220,7 +226,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         socket.emit(Constants.REJECT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
             respondedBy: this.props.user,
-            roomid: this.state.roomInvite.roomid,
+            roomId: this.state.roomInvite.roomId,
         });
         this.setState({ roomInvite: emptyRoomInvite });
     };
@@ -249,7 +255,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             <div>
                 <TransferRequest
                     roomInvite={this.state.roomInvite}
-                    visible={this.state.roomInvite.sender.userid !== ''}
+                    visible={this.state.roomInvite.sender.userId !== ''}
                     acceptRequest={this.acceptRequest}
                     declineRequest={this.declineRequest}
                 />

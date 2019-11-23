@@ -15,8 +15,8 @@ const mapStateToProps = (state: StoreState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
     setUser: (user: UserDisplay) => dispatch(setUser(user)),
     addRoom: (room: Room) => dispatch(addRoom(room)),
-    removeRoom: (roomid: string) => dispatch(removeRoom(roomid)),
-    updateRoom: (roomid: string, room: Room) => dispatch(updateRoom(roomid, room)),
+    removeRoom: (roomId: string) => dispatch(removeRoom(roomId)),
+    updateRoom: (roomId: string, room: Room) => dispatch(updateRoom(roomId, room)),
 });
 
 export default connect(

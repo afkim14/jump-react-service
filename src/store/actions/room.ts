@@ -58,17 +58,17 @@ export function addRoom(room: Room): AddRoom {
     };
 }
 
-export function removeRoom(roomid: string): RemoveRoom {
+export function removeRoom(roomId: string): RemoveRoom {
     return {
         type: REMOVE_ROOM,
-        payload: roomid,
+        payload: roomId,
     };
 }
 
-export function updateRoom(roomid: string, room: Room): UpdateRoom {
+export function updateRoom(roomId: string, room: Room): UpdateRoom {
     return {
         type: UPDATE_ROOM,
-        payload: roomid,
+        payload: roomId,
         data: room,
     };
 }

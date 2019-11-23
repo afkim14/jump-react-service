@@ -15,7 +15,7 @@ type FileTransferProps = {
     displayName: Types.UserDisplay;
     channelsOpen: boolean;
     setReceiveFileHandler: (handler: any) => void;
-    updateRoom: (roomid: string, room: Types.Room) => void;
+    updateRoom: (roomId: string, room: Types.Room) => void;
     addFileToRoom: (roomId: string, file: File) => void;
     sendFile: (roomId: string, sender: Types.UserDisplay) => void;
 };
@@ -137,7 +137,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
             updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === this.state.currentFile.id) {
                     f.completed = true;
-                    this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+                    this.props.updateRoom(updatedRoom.roomId, updatedRoom);
                 }
             });
 
@@ -155,7 +155,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
     handleFileInputChange(file: File | null): void {
         if (file) {
-            this.props.addFileToRoom(this.props.currentRoom.roomid, file);
+            this.props.addFileToRoom(this.props.currentRoom.roomId, file);
         }
     }
 
@@ -225,7 +225,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
 
         const updatedRoom = this.props.currentRoom;
         updatedRoom.files.push(newFile);
-        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+        this.props.updateRoom(updatedRoom.roomId, updatedRoom);
         this.setState({ currentFileToSend: file }, () => {
             this.handleSendData(this.state.currentFileToSend);
         });
@@ -245,7 +245,7 @@ class FileTransfer extends Component<FileTransferProps, FileTranferState> {
                     <CustomButton
                         text={'Send Files'}
                         style={{ backgroundColor: '#F4976C' }}
-                        onClick={() => this.props.sendFile(this.props.currentRoom.roomid, this.props.displayName)}
+                        onClick={() => this.props.sendFile(this.props.currentRoom.roomId, this.props.displayName)}
                     />
                 )}
                 <ReceivedFiles receivedFiles={this.props.currentRoom.receivedFiles} />

@@ -10,8 +10,8 @@ type ConnectedRoomProps = {
 
 const ConnectedRoom: FC<ConnectedRoomProps> = (props: ConnectedRoomProps) => (
     <div className="room-connected-container">
-        {Object.keys(props.currentRoom.invited).map((userid, i) => {
-            if (userid === props.displayName.userid) {
+        {Object.keys(props.currentRoom.invited).map((userId, i) => {
+            if (userId === props.displayName.userId) {
                 return;
             }
 
@@ -20,10 +20,10 @@ const ConnectedRoom: FC<ConnectedRoomProps> = (props: ConnectedRoomProps) => (
                     <p
                         className="room-connected-receipient-username"
                         style={{
-                            backgroundColor: props.currentRoom.invited[userid].displayName.color,
+                            backgroundColor: props.currentRoom.invited[userId].displayName.color,
                         }}
                     >
-                        {props.currentRoom.invited[userid].displayName.displayName}
+                        {props.currentRoom.invited[userId].displayName.displayName}
                     </p>
                 </div>
             );

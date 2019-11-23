@@ -10,7 +10,7 @@ type MessagingProps = {
     displayName: Types.UserDisplay;
     channelsOpen: boolean;
     setReceiveMessageHandler: (handler: any) => void;
-    updateRoom: (roomid: string, room: Types.Room) => void;
+    updateRoom: (roomId: string, room: Types.Room) => void;
 };
 
 type MessagingState = {
@@ -50,7 +50,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
     addMessage = (msg: Types.Message): void => {
         const updatedRoom = this.props.currentRoom;
         updatedRoom.messages.push(msg);
-        this.props.updateRoom(updatedRoom.roomid, updatedRoom);
+        this.props.updateRoom(updatedRoom.roomId, updatedRoom);
     }
 
     /**

@@ -9,7 +9,7 @@ type LeftTabBarProps = {
     displayName: Types.UserDisplay;
     users: Types.UserDisplayMap;
     selectUser: (displayName: Types.UserDisplay) => void;
-    leaveRoom: (roomid: string) => void;
+    leaveRoom: (roomId: string) => void;
     updateSearchResults: (search: string) => void;
     searchResults: Array<Types.UserDisplay>;
     rooms: Types.ConnectedRoomMap;
@@ -33,7 +33,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
     getOtherUserInRoom = (room: Types.Room): Types.UserDisplay => {
         const users = Object.keys(room.invited);
         for (let i = 0; i < users.length; i++) {
-            if (room.invited[users[i]].displayName.userid !== this.props.displayName.userid) {
+            if (room.invited[users[i]].displayName.userId !== this.props.displayName.userId) {
                 return room.invited[users[i]].displayName;
             }
         }
@@ -59,27 +59,27 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 </A>
                 <UserContainer displayName={this.props.displayName} />
                 <p className="left-tab-bar-header">Connections</p>
-                {Object.keys(this.props.rooms).map((roomid, i) => {
+                {Object.keys(this.props.rooms).map((roomId, i) => {
                     return (
                         <UserContainer
                             key={i}
-                            displayName={this.getOtherUserInRoom(this.props.rooms[roomid])}
+                            displayName={this.getOtherUserInRoom(this.props.rooms[roomId])}
                             onClick={(): void => {
-                                this.props.selectUser(this.getOtherUserInRoom(this.props.rooms[roomid]));
+                                this.props.selectUser(this.getOtherUserInRoom(this.props.rooms[roomId]));
                             }}
                             onLeaveRoom={(): void => {
-                                this.props.leaveRoom(roomid);
+                                this.props.leaveRoom(roomId);
                             }}
-                            requestSent={this.props.rooms[roomid].requestSent}
-                            accepted={this.checkRoomAccepted(this.props.rooms[roomid])}
-                            currentRoom={this.props.currentRoomId === roomid}
+                            requestSent={this.props.rooms[roomId].requestSent}
+                            accepted={this.checkRoomAccepted(this.props.rooms[roomId])}
+                            currentRoom={this.props.currentRoomId === roomId}
                         />
                     );
                 })}
                 <p className="left-tab-bar-header">All Users</p>
                 <CustomTextInput onChange={this.handleSearchUser} placeholder={'Search ...'} style={{ width: '80%' }} />
                 {this.props.searchResults.map((user, i) => {
-                    if (user.userid === this.props.displayName.userid) {
+                    if (user.userId === this.props.displayName.userId) {
                         return;
                     }
 
