@@ -1,6 +1,14 @@
 import { ConnectedRoomMap, Room, ReceivedFile } from '../../constants/Types';
 import { RoomAction } from '../actions/room';
-import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE, RECEIVED_FILE } from '../types';
+import {
+    ADD_ROOM,
+    REMOVE_ROOM,
+    UPDATE_ROOM,
+    ADD_FILE_TO_ROOM,
+    SEND_FILE,
+    RECEIVED_FILE,
+    RECEIVE_MESSAGE,
+} from '../types';
 import RTC from '../../services/RTC';
 import socket from '../../constants/socket-context';
 import Constants from '../../constants/Constants';
@@ -87,6 +95,16 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
                 [action.payload.roomId]: {
                     ...roomWithReceivedFile,
                     receivedFiles: [...roomWithReceivedFile.receivedFiles, receivedFile],
+                },
+            };
+
+        case RECEIVE_MESSAGE:
+            const roomWithNewMessage = state[action.payload.roomId];
+            const newMessage = action.payload.message;
+            return {
+                [action.payload.roomId]: {
+                    ...roomWithNewMessage,
+                    messages: [...roomWithNewMessage.messages, newMessage],
                 },
             };
 

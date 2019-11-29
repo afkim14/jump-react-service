@@ -31,3 +31,6 @@ export type SEND_FILE = typeof SEND_FILE;
 
 export const RECEIVED_FILE = 'RECEIVED_FILE';
 export type RECEIVED_FILE = typeof RECEIVED_FILE;
+
+export const RECEIVE_MESSAGE = 'RECEIVE_MESSAGE';
+export type RECEIVE_MESSAGE = typeof RECEIVE_MESSAGE;

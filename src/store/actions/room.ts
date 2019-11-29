@@ -1,5 +1,13 @@
-import { Room, UserDisplay, FileInfo } from '../../constants/Types';
-import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE, RECEIVED_FILE } from '../types';
+import { Room, UserDisplay, FileInfo, Message } from '../../constants/Types';
+import {
+    ADD_ROOM,
+    REMOVE_ROOM,
+    UPDATE_ROOM,
+    ADD_FILE_TO_ROOM,
+    SEND_FILE,
+    RECEIVED_FILE,
+    RECEIVE_MESSAGE,
+} from '../types';
 
 export interface AddRoom {
     type: ADD_ROOM;
@@ -33,6 +41,11 @@ export interface ReceivedFile {
     payload: ReceivedFilePayload;
 }
 
+export interface ReceiveMessage {
+    type: RECEIVE_MESSAGE;
+    payload: ReceiveMessagePayload;
+}
+
 interface AddFileToRoomPayload {
     file: File;
     roomId: string;
@@ -49,7 +62,12 @@ interface ReceivedFilePayload {
     fileName: string;
 }
 
-export type RoomAction = AddRoom | RemoveRoom | UpdateRoom | AddFileToRoom | SendFile | ReceivedFile;
+export interface ReceiveMessagePayload {
+    roomId: string;
+    message: Message;
+}
+
+export type RoomAction = AddRoom | RemoveRoom | UpdateRoom | AddFileToRoom | SendFile | ReceivedFile | ReceiveMessage;
 
 export function addRoom(room: Room): AddRoom {
     return {
@@ -100,6 +118,16 @@ export function ReceivedFile(roomId: string, fileAnchorDownloadHref: string, fil
             roomId,
             fileAnchorDownloadHref,
             fileName,
+        },
+    };
+}
+
+export function ReceiveMessage(roomId: string, message: Message): ReceiveMessage {
+    return {
+        type: RECEIVE_MESSAGE,
+        payload: {
+            roomId,
+            message,
         },
     };
 }

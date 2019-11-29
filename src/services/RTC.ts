@@ -2,7 +2,7 @@ import socket from '../constants/socket-context';
 import Constants from '../constants/Constants';
 import * as Types from '../constants/Types';
 import store from '../store';
-import { ReceivedFile } from '../store/actions/room';
+import { ReceivedFile, ReceiveMessage } from '../store/actions/room';
 
 const TIMEOUT_MS = 1500;
 const RETRY_INTERVAL_MS = 3000;
@@ -13,7 +13,6 @@ class RTC {
     receiveChannel: RTCDataChannel | null;
     customSendChannelStatusHandler: any;
     customReceiveChannelStatusHandler: any;
-    customReceiveDataHandler: (event: MessageEvent) => void;
     attemptReconnectInterval: any;
     numReconnectRetries: number;
     roomid: string;
@@ -41,7 +40,6 @@ class RTC {
         this.receiveChannel = null;
         this.customSendChannelStatusHandler = null;
         this.customReceiveChannelStatusHandler = null;
-        this.customReceiveDataHandler = this.handleReceiveData;
         this.attemptReconnectInterval = null;
         this.numReconnectRetries = 5;
         this.roomid = roomid;
@@ -273,8 +271,11 @@ class RTC {
      */
     onReceiveDataCallback = (event: MessageEvent): void => {
         console.log(`Received message from receive channel: ${event}`);
-        if (this.customReceiveDataHandler) {
-            this.customReceiveDataHandler(event);
+        isDataMessage(event);
+        if (isDataMessage(event)) {
+            this.handleReceiveData(event);
+        } else {
+            this.handleReceiveMessage(event);
         }
     };
 
@@ -290,13 +291,6 @@ class RTC {
      */
     setHandleReceiveChannelStatusChange = (handler: any): void => {
         this.customReceiveChannelStatusHandler = handler;
-    };
-
-    /**
-     * Sets custom handler for on message received.
-     */
-    setReceiveDataHandler = (handler: any): void => {
-        this.customReceiveDataHandler = handler;
     };
 
     /**
@@ -340,6 +334,16 @@ class RTC {
             store.dispatch(ReceivedFile(this.roomid, this.anchorDownloadHref, this.anchorDownloadFileName));
         }
     };
+
+    handleReceiveMessage = (event: MessageEvent) => {
+        const message = JSON.parse(event.data);
+        const action = ReceiveMessage(this.roomid, message);
+        store.dispatch(action);
+    };
+}
+
+function isDataMessage(event: MessageEvent) {
+    return typeof event.data !== 'string';
 }
 
 export default RTC;
