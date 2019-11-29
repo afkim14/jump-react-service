@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './UserContainer.css';
+import '../assets/components/UserContainer.scss';
 import * as Types from '../constants/Types';
 
 type UserContainerProps = {
@@ -13,23 +13,25 @@ type UserContainerProps = {
 
 type UserContainerState = {
     hovered: boolean;
-}
+};
 
 export default class UserContainer extends Component<UserContainerProps, UserContainerState> {
     state: UserContainerState = {
-        hovered: false
+        hovered: false,
     };
 
     render(): React.ReactNode {
         const currentRoomNoAction = !this.props.accepted && !this.props.requestSent && this.props.currentRoom;
         const acceptedStatusHtmlContent = <p className="user-display-status">Accepted</p>;
         const pendingStatusHtmlContent = <p className="user-display-status">Pending</p>;
-        const status = this.props.accepted ? acceptedStatusHtmlContent : (this.props.requestSent && pendingStatusHtmlContent);
+        const status = this.props.accepted
+            ? acceptedStatusHtmlContent
+            : this.props.requestSent && pendingStatusHtmlContent;
 
         return (
             <div
-                className={`user-container ${this.props.currentRoom && 'user-container-current'} ${currentRoomNoAction &&
-                    'user-container-initial'}`}
+                className={`user-container ${this.props.currentRoom &&
+                    'user-container-current'} ${currentRoomNoAction && 'user-container-initial'}`}
                 onMouseDown={(): void => {
                     this.props.onClick && this.props.onClick();
                 }}
@@ -47,19 +49,19 @@ export default class UserContainer extends Component<UserContainerProps, UserCon
                 <p className={`user-display-text ${currentRoomNoAction && 'user-display-light'}`}>
                     {this.props.displayName.displayName}
                 </p>
-                {
-                    this.state.hovered && this.props.onLeaveRoom ? (
-                        <div 
-                            className={'user-container-x-container'}
-                            onClick={(): void => { this.props.onLeaveRoom && this.props.onLeaveRoom(); }}
-                        >
-                            x
-                        </div>
-                    ) : (
-                        status
-                    )
-                }
+                {this.state.hovered && this.props.onLeaveRoom ? (
+                    <div
+                        className={'user-container-x-container'}
+                        onClick={(): void => {
+                            this.props.onLeaveRoom && this.props.onLeaveRoom();
+                        }}
+                    >
+                        x
+                    </div>
+                ) : (
+                    status
+                )}
             </div>
-        )
+        );
     }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Types from '../constants/Types';
 import CustomButton from './CustomButton';
-import './TransferRequest.css';
+import '../assets/components/TransferRequest.scss';
 
 type TransferRequestProps = {
     roomInvite: Types.RoomInvite;

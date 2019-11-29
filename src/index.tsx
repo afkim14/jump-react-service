@@ -5,7 +5,7 @@ import { useRoutes } from 'hookrouter';
 
 import store from './store';
 import * as serviceWorker from './constants/serviceWorker';
-import './index.css';
+import './index.scss';
 
 import Login from './components/Login';
 import MainHome from './containers/MainHome';

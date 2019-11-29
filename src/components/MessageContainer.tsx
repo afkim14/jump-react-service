@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 
 import { Message } from '../constants/Types';
-import './MessageContainer.css';
+import '../assets/components/MessageContainer.scss';
 
 type MessageProps = {
     key: number;
