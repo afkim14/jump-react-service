@@ -83,7 +83,6 @@ class DragAndDropFile extends Component<DragAndDropFileProps, DragAndDropFileSta
     render(): React.ReactNode {
         return (
             <div>
-                Hello world, this is Drag and Drop component.
                 <div className={`${this.state.dragging && 'drag-and-drop-container-on-drag'}`} ref={this.dropRef}>
                     {this.state.dragging ? (
                         <div>
