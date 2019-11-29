@@ -1,34 +1,36 @@
+@import '../styles/constants';
+
 .custom-button {
     height: 40px;
     width: 200px;
-    color: #ffffff;
-    background-color: #F4976C;
-    font-size: 15px;
+    color: $color-white;
+    background-color: $color-background-red;
+    font-size: $font-default-size;
     outline: none;
     border: none;
     cursor: pointer;
-    margin: 10px auto 10px auto;
+    margin: $margin-default auto $margin-default auto;
     display: block;
 
-    transition: border-radius 0.3s ease;
-    -webkit-transition: border-radius 0.3s ease;
-    -moz-transition: border-radius 0.3s ease;
-    -o-transition: border-radius 0.3s ease;
+    transition: border-radius $transition-speed ease;
+    -webkit-transition: border-radius $transition-speed ease;
+    -moz-transition: border-radius $transition-speed ease;
+    -o-transition: border-radius $transition-speed ease;
 }
 
 .disabled-button {
     height: 40px;
     width: 200px;
-    color: #ffffff;
-    background-color: #F4976C;
-    font-size: 15px;
+    color: $color-white;
+    background-color: $color-background-red;
+    font-size: $font-default-size;
     outline: none;
     border: none;
-    border-radius: 75px;
-    margin: 10px auto 10px auto;
+    border-radius: $border-radius-default;
+    margin: $margin-default auto $margin-default auto;
     display: block;
 }
 
 .custom-button:hover {
-    border-radius: 75px;
+    border-radius: $border-radius-default;
 }

@@ -1,3 +1,7 @@
+@import '../styles/constants.scss';
+
+$user-container-color: #232e51;
+
 .user-container {
     width: 80%;
     height: 30px;
@@ -5,14 +9,14 @@
     margin: 0px auto;
     cursor: pointer;
 
-    -webkit-transition: box-shadow 0.3s ease;
-    -moz-transition: box-shadow 0.3s ease;
-    -o-transition: box-shadow 0.3s ease;
-    transition: box-shadow 0.3s ease;
+    -webkit-transition: box-shadow $transition-speed ease;
+    -moz-transition: box-shadow $transition-speed ease;
+    -o-transition: box-shadow $transition-speed ease;
+    transition: box-shadow $transition-speed ease;
 }
 
 .user-container-current {
-    background-color: #232E51;
+    background-color: $user-container-color;
 }
 
 .user-container-initial {
@@ -20,7 +24,7 @@
 }
 
 .user-container:hover {
-    box-shadow: 5px 5px 2px #232E51;
+    box-shadow: 5px 5px 2px $user-container-color;
 }
 
 .user-display-light {
@@ -39,8 +43,8 @@
     float: left;
     margin: 0px;
     margin-top: 4px;
-    margin-left: 10px;
-    color: #FBFBF2;
+    margin-left: $margin-default;
+    color: $color-text;
 }
 
 .user-display-status {
@@ -48,12 +52,12 @@
     margin: 0px;
     opacity: 0.5;
     margin-top: 4px;
-    color: #FBFBF2;
+    color: $color-text;
 }
 
 .user-container-x-container {
     float: right;
-    color: #FBFBF2;
+    color: $color-text;
     width: 25px;
     height: 25px;
     text-align: center;
@@ -64,6 +68,6 @@
 }
 
 .user-container-x-container:hover {
-    background-color: #f4976c;
-    color: #303C6C;
+    background-color: $color-background-red;
+    color: $color-left-menu-background;
 }
