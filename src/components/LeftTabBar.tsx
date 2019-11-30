@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { A } from 'hookrouter';
-import './LeftTabBar.css';
+import '../assets/components/LeftTabBar.scss';
 import CustomTextInput from './CustomTextInput';
 import UserContainer from './UserContainer';
 import * as Types from '../constants/Types';

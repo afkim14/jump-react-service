@@ -1,9 +1,11 @@
+@import '../styles/constants.scss';
+
 .messaging-submit-button {
     display: none;
 }
 
 .messaging-inbox {
-    background-color: #1A253F;
+    background-color: #1a253f;
     position: absolute;
     bottom: 40px;
     left: 300px;
@@ -20,11 +22,11 @@
 }
 
 .messaging-connecting-msg {
-    background-color: #232E51;
-    padding: 10px;
+    background-color: $color-text-background;
+    padding: $margin-default;
     position: relative;
     top: 16px;
-    color: #FBFBF2;
+    color: $color-text;
     padding-left: 20px;
     font-style: italic;
 }

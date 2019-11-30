@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 
 import { UserDisplay } from '../constants/Types';
-import './MainWelcome.css';
+import '../assets/components/MainWelcome.scss';
 
 type MainWelcomeProps = {
     userDisplay: UserDisplay;

@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Room, UserDisplay } from '../constants/Types';
 import CustomButton from './CustomButton';
-import './RoomConnect.css';
+import '../assets/components/RoomConnect.scss';
 
 type RoomConnectProps = {
     currentRoom: Room;
