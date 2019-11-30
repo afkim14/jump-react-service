@@ -1,5 +1,11 @@
 import socket from '../constants/socket-context';
-import Constants from '../constants/Constants';
+import {
+    RTC_DESCRIPTION_ANSWER,
+    RTC_DESCRIPTION_OFFER,
+    ICE_CANDIDATE,
+    SEND_FILE_REQUEST,
+    SEND_ROOM_INVITES,
+} from '../constants/Constants';
 import * as Types from '../constants/Types';
 import store from '../store';
 import { ReceivedFile, ReceiveMessage } from '../store/actions/room';
@@ -60,7 +66,7 @@ class RTC {
         this.anchorDownloadFileName = '';
         this.receivingFileMaxSize = Infinity;
 
-        socket.on(Constants.RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
+        socket.on(RTC_DESCRIPTION_OFFER, (data: Types.SDP) => {
             if (data.roomid !== this.roomid) {
                 return;
             }
@@ -73,7 +79,7 @@ class RTC {
                         .createAnswer()
                         .then((answer: RTCSessionDescriptionInit) => {
                             this.localConnection.setLocalDescription(answer);
-                            socket.emit(Constants.RTC_DESCRIPTION_ANSWER, {
+                            socket.emit(RTC_DESCRIPTION_ANSWER, {
                                 sdp: this.localConnection.localDescription,
                                 roomid: this.roomid,
                             });
@@ -83,7 +89,7 @@ class RTC {
                 .catch(this.handleSetDescriptionError);
         });
 
-        socket.on(Constants.RTC_DESCRIPTION_ANSWER, (data: Types.SDP) => {
+        socket.on(RTC_DESCRIPTION_ANSWER, (data: Types.SDP) => {
             if (data.roomid !== this.roomid) {
                 return;
             }
@@ -96,7 +102,7 @@ class RTC {
                 .catch(this.handleSetDescriptionError);
         });
 
-        socket.on(Constants.ICE_CANDIDATE, (data: Types.IceCandidate) => {
+        socket.on(ICE_CANDIDATE, (data: Types.IceCandidate) => {
             if (data.roomid !== this.roomid) {
                 return;
             }
@@ -104,7 +110,7 @@ class RTC {
             this.localConnection.addIceCandidate(data.candidate).catch(this.handleAddCandidateError);
         });
 
-        socket.on(Constants.SEND_FILE_REQUEST, (data: any) => {
+        socket.on(SEND_FILE_REQUEST, (data: any) => {
             this.receivingFileMaxSize = data.fileSize;
             this.anchorDownloadFileName = data.fileName;
         });
@@ -128,7 +134,7 @@ class RTC {
                 .then((offer: RTCSessionDescriptionInit) => this.localConnection.setLocalDescription(offer))
                 .then(() => {
                     console.log('Sender SDP sent.');
-                    socket.emit(Constants.RTC_DESCRIPTION_OFFER, {
+                    socket.emit(RTC_DESCRIPTION_OFFER, {
                         sdp: this.localConnection.localDescription,
                         roomid: this.roomid,
                     });
@@ -221,7 +227,7 @@ class RTC {
      */
     handleOnICECandidate = (e: RTCPeerConnectionIceEvent): void => {
         if (e.candidate) {
-            socket.emit(Constants.ICE_CANDIDATE, {
+            socket.emit(ICE_CANDIDATE, {
                 candidate: e.candidate,
                 roomid: this.roomid,
             });
