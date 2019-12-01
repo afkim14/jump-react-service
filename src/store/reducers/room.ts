@@ -13,7 +13,7 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
         case ADD_ROOM:
             return {
                 ...state,
-                [action.payload.roomid]: action.payload,
+                [action.payload.roomId]: action.payload,
             };
         case REMOVE_ROOM:
             const roomIdToRemove = action.payload;
@@ -53,7 +53,7 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
             if (!roomRTCConnection || !fileToSend) return state;
 
             socket.emit(SEND_FILE_REQUEST, {
-                roomid: room.roomid,
+                roomId: room.roomId,
                 fileName: room.files[0].name,
                 fileSize: room.files[0].size,
                 sender: action.payload.sender,

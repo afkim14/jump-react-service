@@ -1,22 +1,22 @@
 import RTC from '../services/RTC';
 
 export type CreateRoom = { size: number }; // data sent by frontend on room creation information
-export type ConnectRoom = { roomid: string }; // data sent by frontend to connect to specific room
-export type UserDisplayMap = { [userid: string]: UserDisplay }; // Map from userid to display name
+export type ConnectRoom = { roomId: string }; // data sent by frontend to connect to specific room
+export type UserDisplayMap = { [userId: string]: UserDisplay }; // Map from userid to display name
 export type UserDisplay = {
     // user information
-    userid: string;
+    userId: string;
     displayName: string;
     color: string;
 };
 
-export type ConnectedRoomMap = { [userid: string]: Room };
+export type ConnectedRoomMap = { [userId: string]: Room };
 
-export type ConnectedUserMap = { [userid: string]: { accepted: boolean; displayName: UserDisplay } };
+export type ConnectedUserMap = { [userId: string]: { accepted: boolean; displayName: UserDisplay } };
 
 export type Room = {
     // Both in frontend and backend
-    roomid: string;
+    roomId: string;
     owner: string;
     requestSent: boolean;
     invited: ConnectedUserMap;
@@ -31,22 +31,22 @@ export type Room = {
 
 export type RoomInvite = {
     sender: UserDisplay;
-    roomid: string;
+    roomId: string;
 };
 
 export type RoomInviteResponse = {
     invitedBy: UserDisplay;
     respondedBy: UserDisplay;
-    roomid: string;
+    roomId: string;
 };
 
 export type RoomStatus = {
     type: string;
-    roomid: string;
+    roomId: string;
     invited: ConnectedUserMap;
     full: boolean;
     owner: string;
-    userid: string;
+    userId: string;
 };
 
 export type Message = {
@@ -73,10 +73,10 @@ export type ReceivedFile = {
 // RTC STUFF
 export type SDP = {
     sdp: RTCSessionDescription;
-    roomid: string;
+    roomId: string;
 };
 
 export type IceCandidate = {
     candidate: RTCIceCandidate;
-    roomid: string;
+    roomId: string;
 };

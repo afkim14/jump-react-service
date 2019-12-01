@@ -9,7 +9,7 @@ import ConnectedRoom from '../components/ConnectedRoom';
 type RoomProps = {
     currentRoom: Types.Room;
     displayName: Types.UserDisplay;
-    updateRoom: (roomid: string, room: Types.Room) => void;
+    updateRoom: (roomId: string, room: Types.Room) => void;
 };
 
 type RoomState = {
@@ -29,17 +29,18 @@ export default class Room extends Component<RoomProps, RoomState> {
 
     componentDidMount(): void {
         // Attempt to connect to room when this component loads.
-        socket.emit(CONNECT_TO_ROOM, { roomid: this.props.currentRoom.roomid });
+        socket.emit(CONNECT_TO_ROOM, { roomId: this.props.currentRoom.roomId });
 
         if (this.props.currentRoom.rtcConnection) {
             this.props.currentRoom.rtcConnection.connectPeers(
-                `${this.props.currentRoom.roomid}-data-channel`,
-                this.props.displayName.userid === this.props.currentRoom.owner,
+                `${this.props.currentRoom.roomId}-data-channel`,
+                this.props.displayName.userId === this.props.currentRoom.owner,
             );
             this.props.currentRoom.rtcConnection.setHandleSendChannelStatusChange(this.handleSendChannelStatusChange);
             this.props.currentRoom.rtcConnection.setHandleReceiveChannelStatusChange(
                 this.handleReceiveChannelStatusChange,
             );
+            
             // this.props.currentRoom.rtcConnection.setReceiveDataHandler(this.handleReceiveData);
 
             this.props.currentRoom.rtcConnection.setSendChannelBinaryType('arraybuffer');

@@ -9,8 +9,8 @@ type RoomAwaitingProps = {
 
 const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
     <div className="room-awaiting-container">
-        {Object.keys(props.invited).map((userid, idx) => {
-            if (userid === props.displayName.userid) {
+        {Object.keys(props.invited).map((userId, idx) => {
+            if (userId === props.displayName.userId) {
                 return;
             }
 
@@ -19,18 +19,17 @@ const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
                     <div
                         className="room-awaiting-receipient-circle-icon"
                         style={{
-                            backgroundColor: props.invited[userid].displayName.color,
+                            backgroundColor: props.invited[userId].displayName.color,
                         }}
                     />
-                    <p className="room-awaiting-receipient-username">{props.invited[userid].displayName.displayName}</p>
-                    <p
-                        className={`room-awaiting-status ${!props.invited[userid].accepted &&
-                            'room-awaiting-status-pulsing'}`}
+                    <p className="room-awaiting-receipient-username">{props.invited[userId].displayName.displayName}</p>
+                    <p className={`room-awaiting-status ${!props.invited[userId].accepted &&
+                        'room-awaiting-status-pulsing'}`}
                     >
-                        {props.invited[userid].accepted ? 'Accepted' : 'Pending...'}
+                        {props.invited[userId].accepted ? 'Accepted' : 'Pending...'}
                     </p>
-                </div>
-            );
+                </div>   
+            )
         })}
     </div>
 );

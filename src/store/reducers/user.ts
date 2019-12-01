@@ -3,7 +3,7 @@ import { UserAction } from '../actions/user';
 import { SET_USER } from '../types';
 
 const initialState: UserDisplay = {
-    userid: '',
+    userId: '',
     displayName: '',
     color: '',
 };
