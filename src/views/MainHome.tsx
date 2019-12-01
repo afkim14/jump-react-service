@@ -185,7 +185,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         this.setState({ creatingRoom: newRoom });
 
         // Remove any rooms that were open but request wasn't sent
-        Object.keys(this.props.rooms).forEach(roomId => {
+        Object.keys(this.props.rooms).forEach((roomId: string) => {
             if (!this.props.rooms[roomId].requestSent) {
                 // TODO: properly close RTC connection
                 delete this.props.rooms[roomId];
