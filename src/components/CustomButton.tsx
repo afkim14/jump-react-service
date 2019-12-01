@@ -1,5 +1,5 @@
 import React from 'react';
-import './CustomButton.css';
+import '../assets/components/CustomButton.scss';
 
 type CustomButtonProps = {
     text: string;

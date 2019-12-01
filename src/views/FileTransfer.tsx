@@ -5,7 +5,7 @@ import DragAndDropFile from '../components/DragAndDropFile';
 import CustomButton from '../components/CustomButton';
 import ReceivedFiles from '../components/ReceivedFiles';
 import * as Types from '../constants/Types';
-import './FileTransfer.css';
+import '../assets/views/FileTransfer.scss';
 
 import { addFileToRoom, SendFile } from '../store/actions/room';
 import { connect } from 'react-redux';

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Constants from '../constants/Constants';
+import { CONNECT_TO_ROOM } from '../constants/Constants';
 import * as Types from '../constants/Types';
 import socket from '../constants/socket-context';
 import Messaging from './Messaging';
@@ -29,7 +29,7 @@ export default class Room extends Component<RoomProps, RoomState> {
 
     componentDidMount(): void {
         // Attempt to connect to room when this component loads.
-        socket.emit(Constants.CONNECT_TO_ROOM, { roomId: this.props.currentRoom.roomId });
+        socket.emit(CONNECT_TO_ROOM, { roomId: this.props.currentRoom.roomId });
 
         if (this.props.currentRoom.rtcConnection) {
             this.props.currentRoom.rtcConnection.connectPeers(

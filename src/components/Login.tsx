@@ -2,7 +2,7 @@ import React from 'react';
 import { A } from 'hookrouter';
 import logoImg from '../assets/images/logo-01.png';
 import CustomButton from './CustomButton';
-import './Login.css';
+import '../assets/components/Login.scss';
 
 const Login: React.FC = () => {
     return (

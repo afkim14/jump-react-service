@@ -1,6 +1,21 @@
 import React, { Component } from 'react';
 import socket from '../constants/socket-context';
-import Constants from '../constants/Constants';
+import {
+    LOGIN,
+    DISPLAY_NAME,
+    USERS,
+    SEARCH_USERS,
+    CREATE_ROOM,
+    CREATE_ROOM_SUCCESS,
+    SEND_ROOM_INVITES,
+    ROOM_STATUS,
+    FILE_ACCEPT,
+    FILE_REJECT,
+    USER_CONNECT,
+    LEAVE_ROOM,
+    ACCEPT_TRANSFER_REQUEST,
+    REJECT_TRANSFER_REQUEST,
+} from '../constants/Constants';
 import * as Types from '../constants/Types';
 
 import LeftTabBar from '../components/LeftTabBar';
@@ -44,21 +59,21 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
     componentDidMount(): void {
         // Get random username and a list of connected users
-        socket.emit(Constants.LOGIN);
+        socket.emit(LOGIN);
 
-        socket.on(Constants.DISPLAY_NAME, (displayName: Types.UserDisplay) => {
+        socket.on(DISPLAY_NAME, (displayName: Types.UserDisplay) => {
             this.props.setUser(displayName);
         });
 
-        socket.on(Constants.USERS, (users: Types.UserDisplayMap) => {
+        socket.on(USERS, (users: Types.UserDisplayMap) => {
             this.setState({ users, searchResults: Object.values(users) });
         });
 
-        socket.on(Constants.SEARCH_USERS, (searchResults: Types.UserDisplay[]) => {
+        socket.on(SEARCH_USERS, (searchResults: Types.UserDisplay[]) => {
             this.setState({ searchResults });
         });
 
-        socket.on(Constants.CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
+        socket.on(CREATE_ROOM_SUCCESS, (roomInfo: Types.ConnectRoom) => {
             // Update with roomid given by server and open room
             if (this.state.creatingRoom) {
                 const updatedRoom = this.state.creatingRoom;
@@ -69,22 +84,22 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             }
         });
 
-        socket.on(Constants.SEND_ROOM_INVITES, (invite: Types.RoomInvite) => {
+        socket.on(SEND_ROOM_INVITES, (invite: Types.RoomInvite) => {
             this.setState({ roomInvite: invite });
         });
 
-        socket.on(Constants.LEAVE_ROOM, ( roomId: string ) => {
+        socket.on(LEAVE_ROOM, ( roomId: string ) => {
             this.props.removeRoom(roomId);
             if (this.state.currentRoomId === roomId) {
                 this.setState({ currentRoomId: '' });
             }
         });
 
-        socket.on(Constants.ROOM_STATUS, (data: Types.RoomStatus) => {
+        socket.on(ROOM_STATUS, (data: Types.RoomStatus) => {
             const updatedRoom = this.props.rooms[data.roomId];
             if (updatedRoom) {
                 // Users connected to the room already
-                updatedRoom.invited[data.userId].accepted = data.type === Constants.USER_CONNECT;
+                updatedRoom.invited[data.userId].accepted = data.type === USER_CONNECT;
                 updatedRoom.full = data.full;
                 this.props.updateRoom(updatedRoom.roomId, updatedRoom);
             } else {
@@ -110,7 +125,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_ACCEPT, (data: { roomId: string; fileId: string }) => {
+        socket.on(FILE_ACCEPT, (data: { roomId: string; fileId: string }) => {
             const updatedRoom = this.props.rooms[data.roomId];
             updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === data.fileId) {
@@ -121,7 +136,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
         });
 
         // TODO: MAYBE PUT THIS IN FILE TRANSFER
-        socket.on(Constants.FILE_REJECT, (data: { roomId: string; fileId: string }) => {
+        socket.on(FILE_REJECT, (data: { roomId: string; fileId: string }) => {
             const updatedRoom = this.props.rooms[data.roomId];
             updatedRoom.files.forEach((f: Types.FileInfo) => {
                 if (f.id === data.fileId) {
@@ -143,7 +158,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     updateSearchResults = (search: string): void => {
         search === ''
             ? this.setState({ searchResults: Object.values(this.state.users) })
-            : socket.emit(Constants.SEARCH_USERS, search);
+            : socket.emit(SEARCH_USERS, search);
     };
 
     /**
@@ -181,7 +196,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
             receivedFiles: [],
         };
 
-        socket.emit(Constants.CREATE_ROOM, { invited: newRoom.invited });
+        socket.emit(CREATE_ROOM, { invited: newRoom.invited });
         this.setState({ creatingRoom: newRoom });
 
         // Remove any rooms that were open but request wasn't sent
@@ -195,7 +210,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
 
     leaveRoom = (roomId: string): void => {
         this.props.removeRoom(roomId);
-        socket.emit(Constants.LEAVE_ROOM, { roomId });
+        socket.emit(LEAVE_ROOM, { roomId });
     };
 
     /**
@@ -204,7 +219,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
     sendRequests = (): void => {
         const updatedRoom = this.props.rooms[this.state.currentRoomId];
         updatedRoom.requestSent = true;
-        socket.emit(Constants.SEND_ROOM_INVITES, { roomId: updatedRoom.roomId });
+        socket.emit(SEND_ROOM_INVITES, { roomId: updatedRoom.roomId });
         this.props.updateRoom(updatedRoom.roomId, updatedRoom);
     };
 
@@ -212,7 +227,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Accepts incoming transfer request
      */
     acceptRequest = (): void => {
-        socket.emit(Constants.ACCEPT_TRANSFER_REQUEST, {
+        socket.emit(ACCEPT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
             respondedBy: this.props.user,
             roomId: this.state.roomInvite.roomId,
@@ -223,7 +238,7 @@ export default class MainHome extends Component<MainHomeProps, MainHomeState> {
      * Declines incoming transfer request
      */
     declineRequest = (): void => {
-        socket.emit(Constants.REJECT_TRANSFER_REQUEST, {
+        socket.emit(REJECT_TRANSFER_REQUEST, {
             invitedBy: this.state.roomInvite.sender,
             respondedBy: this.props.user,
             roomId: this.state.roomInvite.roomId,

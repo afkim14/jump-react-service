@@ -1,3 +1,5 @@
+@import '../styles/constants.scss';
+
 .main-welcome-container {
     width: calc(100% - 300px);
     float: left;
@@ -17,7 +19,7 @@
     margin: 0px;
     font-size: 30px;
     margin-top: 60px;
-    margin-left: 10px;
+    margin-left: $margin-default;
     font-weight: bold;
 }
 
@@ -35,13 +37,13 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background-color: #f4976c;
+    background-color: $color-background-red;
     float: left;
     margin-left: 40px;
 }
 
 .main-step-number {
-    color: #ffffff;
+    color: $color-white;
     text-align: center;
     margin: 0px;
     margin-top: 4px;
@@ -50,6 +52,6 @@
 .main-step-inst {
     margin: 0px;
     margin-top: 4px;
-    margin-left: 10px;
+    margin-left: $margin-default;
     float: left;
 }

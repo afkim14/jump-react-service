@@ -1,5 +1,5 @@
 import React from 'react';
-import './CustomTextInput.css';
+import '../assets/components/CustomTextInput.scss';
 
 type CustomTextInputProps = {
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;

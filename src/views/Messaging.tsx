@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { UserDisplay } from '../constants/Types';
 import CustomTextInput from '../components/CustomTextInput';
 import * as Types from '../constants/Types';
-import './Messaging.css';
+import '../assets/views/Messaging.scss';
 import MessageContainer from '../components/MessageContainer';
 
 type MessagingProps = {
@@ -38,8 +37,10 @@ class Messaging extends Component<MessagingProps, MessagingState> {
      */
     handleSendMessage(msg: Types.Message): void {
         this.setState({ messageInputText: '' });
-        if (this.props.currentRoom.rtcConnection && 
-            this.props.currentRoom.rtcConnection.sendMessage(JSON.stringify(msg))) {
+        if (
+            this.props.currentRoom.rtcConnection &&
+            this.props.currentRoom.rtcConnection.sendMessage(JSON.stringify(msg))
+        ) {
             this.addMessage(msg);
         }
     }
@@ -80,9 +81,9 @@ class Messaging extends Component<MessagingProps, MessagingState> {
 
     render(): React.ReactNode {
         const messages =
-            this.props.currentRoom.messages && this.props.currentRoom.messages.map((msg, idx) => <MessageContainer key={idx} message={msg} />);
-        const openConnection =
-            !this.props.currentRoom.requestSent || this.props.channelsOpen;
+            this.props.currentRoom.messages &&
+            this.props.currentRoom.messages.map((msg, idx) => <MessageContainer key={idx} message={msg} />);
+        const openConnection = !this.props.currentRoom.requestSent || this.props.channelsOpen;
         return (
             <div className="messaging">
                 <div className="messaging-input">

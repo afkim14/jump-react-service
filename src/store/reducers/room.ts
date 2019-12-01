@@ -3,7 +3,8 @@ import { RoomAction } from '../actions/room';
 import { ADD_ROOM, REMOVE_ROOM, UPDATE_ROOM, ADD_FILE_TO_ROOM, SEND_FILE, RECEIVED_FILE } from '../types';
 import RTC from '../../services/RTC';
 import socket from '../../constants/socket-context';
-import Constants from '../../constants/Constants';
+
+import { SEND_FILE_REQUEST } from '../../constants/Constants';
 
 const initialState: ConnectedRoomMap = {};
 
@@ -51,7 +52,7 @@ function userReducer(state: ConnectedRoomMap = initialState, action: RoomAction)
 
             if (!roomRTCConnection || !fileToSend) return state;
 
-            socket.emit(Constants.SEND_FILE_REQUEST, {
+            socket.emit(SEND_FILE_REQUEST, {
                 roomId: room.roomId,
                 fileName: room.files[0].name,
                 fileSize: room.files[0].size,

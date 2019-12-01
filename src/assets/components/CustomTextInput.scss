@@ -1,0 +1,28 @@
+@import '../styles/constants';
+
+.custom-text-input {
+    width: 350px;
+    height: 20px;
+    background-color: $color-text-background;
+    color: $color-text;
+    font-size: $font-default-size;
+    outline: none;
+    border: none;
+    padding: $margin-default;
+    display: block;
+    margin: $margin-default auto $margin-default auto;
+
+    -webkit-transition: box-shadow $transition-speed ease;
+    -moz-transition: box-shadow $transition-speed ease;
+    -o-transition: box-shadow $transition-speed ease;
+    transition: box-shadow $transition-speed ease;
+}
+
+.custom-text-input::placeholder {
+    color: #fbfbf2;
+    opacity: 0.4;
+}
+
+.custom-text-input:focus {
+    box-shadow: 5px 5px 2px #232e51;
+}
