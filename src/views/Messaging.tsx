@@ -48,6 +48,7 @@ class Messaging extends Component<MessagingProps, MessagingState> {
     /*
      * Adds message to display in UI
      */
+    // TODO: create message actions
     addMessage = (msg: Types.Message): void => {
         const updatedRoom = this.props.currentRoom;
         updatedRoom.messages.push(msg);
