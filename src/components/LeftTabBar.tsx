@@ -80,7 +80,7 @@ export default class LeftTabBar extends Component<LeftTabBarProps, LeftTabBarSta
                 <CustomTextInput onChange={this.handleSearchUser} placeholder={'Search ...'} style={{ width: '80%' }} />
                 {this.props.searchResults.map((user, i) => {
                     if (user.userId === this.props.displayName.userId) {
-                        return;
+                        return null;
                     }
 
                     return (
