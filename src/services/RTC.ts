@@ -343,7 +343,7 @@ class RTC {
 
     handleReceiveMessage = (event: MessageEvent) => {
         const message = JSON.parse(event.data);
-        const action = ReceiveMessage(this.roomid, message);
+        const action = ReceiveMessage(this.roomId, message);
         store.dispatch(action);
     };
 }
