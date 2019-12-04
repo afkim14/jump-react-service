@@ -11,7 +11,7 @@ const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
     <div className="room-awaiting-container">
         {Object.keys(props.invited).map((userId, idx) => {
             if (userId === props.displayName.userId) {
-                return;
+                return null;
             }
 
             return (
@@ -23,13 +23,14 @@ const MessageContainer: FC<RoomAwaitingProps> = (props: RoomAwaitingProps) => (
                         }}
                     />
                     <p className="room-awaiting-receipient-username">{props.invited[userId].displayName.displayName}</p>
-                    <p className={`room-awaiting-status ${!props.invited[userId].accepted &&
-                        'room-awaiting-status-pulsing'}`}
+                    <p
+                        className={`room-awaiting-status ${!props.invited[userId].accepted &&
+                            'room-awaiting-status-pulsing'}`}
                     >
                         {props.invited[userId].accepted ? 'Accepted' : 'Pending...'}
                     </p>
-                </div>   
-            )
+                </div>
+            );
         })}
     </div>
 );

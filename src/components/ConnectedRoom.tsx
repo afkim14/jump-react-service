@@ -12,7 +12,7 @@ const ConnectedRoom: FC<ConnectedRoomProps> = (props: ConnectedRoomProps) => (
     <div className="room-connected-container">
         {Object.keys(props.currentRoom.invited).map((userId, i) => {
             if (userId === props.displayName.userId) {
-                return;
+                return null;
             }
 
             return (

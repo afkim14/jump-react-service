@@ -1,4 +1,4 @@
-import { Room, UserDisplay, FileInfo, Message } from '../../constants/Types';
+import { Room, UserDisplay, Message } from '../../constants/Types';
 import {
     ADD_ROOM,
     REMOVE_ROOM,

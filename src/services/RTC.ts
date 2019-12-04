@@ -4,7 +4,6 @@ import {
     RTC_DESCRIPTION_OFFER,
     ICE_CANDIDATE,
     SEND_FILE_REQUEST,
-    SEND_ROOM_INVITES,
 } from '../constants/Constants';
 import * as Types from '../constants/Types';
 import store from '../store';
